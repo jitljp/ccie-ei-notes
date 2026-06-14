@@ -1,0 +1,7 @@
+[book]
+title = "ccie ei notes"
+authors = ["jmcdo"]
+language = "en"
+
+[output.html]
+additional-css = ["custom.css"]

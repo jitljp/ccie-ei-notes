@@ -13,9 +13,10 @@ IP packet
 This is different from MPLS L3VPN forwarding, where packets usually have two labels:
 
 ```
+Layer 2 header
 Transport label
 VPN label
-Customer IP packet
+IP packet
 ```
 
 The previous pages mentioned L3VPNs as they are the primary MPLS use case in CCIE EI,

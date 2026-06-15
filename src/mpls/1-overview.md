@@ -242,7 +242,7 @@ The idea is:
 Packets in the same FEC receive the same forwarding treatment.
 ```
 
-A FEC is basically equivalent to an IP prefix.
+A FEC is basically equivalent to an IP prefix. Packets within the same destination prefix are forwarded along the same LSP.
 
 ---
 

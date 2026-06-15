@@ -4,7 +4,8 @@
 
 LDP is the protocol commonly used to distribute MPLS labels in a basic MPLS core.
 
-The IGP tells routers how to reach a destination, and LDP tells routers which label to use to get there.
+The IGP tells routers how to reach the IBGP next hop (egress PE loopback),
+and LDP tells routers which label to use to get there.
 
 ```
 IGP = next-hop reachability
@@ -282,7 +283,9 @@ Example:
 1.1.1.1:0
 ```
 
-In most cases, the label space ID is `0`.
+In most cases, the label space ID is `0`, the platform-wide label space.
+> "Platform-wide" means the router uses on shared/global label space for the whole router,
+> not separate label spaces per interface.
 
 So, in most basic labs, you will see LDP IDs like this:
 
@@ -342,7 +345,8 @@ mpls ldp router-id Loopback0
 This tells the router:
 
 ```text
-Use Loopback0 as the preferred LDP router ID the next time an LDP router ID must be selected.
+Use Loopback0 as the preferred LDP router ID the next time
+an LDP router ID must be selected.
 ```
 
 In other words, the command may not affect current LDP sessions immediately.
@@ -466,13 +470,13 @@ interface GigabitEthernet0/0
  mpls ldp discovery transport-address interface
 ```
 
-This tells the router to advertise the IP address of that interface as the transport address.
+This tells the router to advertise the interface's own IP address as the transport address.
 
 So the difference is:
 
 | Command                                          | Meaning                                                           |
 | :----------------------------------------------- | :---------------------------------------------------------------- |
-| `mpls ldp discovery transport-address 10.0.12.1` | Advertise the specified IP address as the transport address       |
+| `mpls ldp discovery transport-address <ip-address>` | Advertise the specified IP address as the transport address       |
 | `mpls ldp discovery transport-address interface` | Advertise the interface's own IP address as the transport address |
 
 ---
@@ -549,9 +553,9 @@ PE1# show mpls ldp discovery detail
     Interfaces:
         Ethernet0/0 (ldp): xmit/recv
             Enabled: Interface config
-            Hello interval: 5000 ms; Transport IP addr: 1.1.1.1
+            Hello interval: 5000 ms; Transport IP addr: 1.1.1.1 ← TRANSPORT ADDRESS
             LDP Id: 2.2.2.2:0
-              Src IP addr: 10.1.1.2; Transport IP addr: 2.2.2.2
+              Src IP addr: 10.1.1.2; Transport IP addr: 2.2.2.2 ← TRANSPORT ADDRESS
               Hold time: 15 sec; Proposed local/peer: 15/15 sec
               Reachable via 2.2.2.2/32
               Password: not required, none, in use
@@ -585,7 +589,7 @@ PE1# show mpls ldp discovery detail
     Interfaces:
         Ethernet0/0 (ldp): xmit/recv
             Enabled: Interface config
-            Hello interval: 5000 ms; Transport IP addr: 10.1.1.1
+            Hello interval: 5000 ms; Transport IP addr: 10.1.1.1 ← INTERFACE IP
             LDP Id: 2.2.2.2:0
               Src IP addr: 10.1.1.2; Transport IP addr: 2.2.2.2
               Hold time: 15 sec; Proposed local/peer: 15/15 sec
@@ -595,7 +599,7 @@ PE1# show mpls ldp discovery detail
 
 PE1# show mpls ldp neighbor 
     Peer LDP Ident: 2.2.2.2:0; Local LDP Ident 1.1.1.1:0
-        TCP connection: 2.2.2.2.646 - 10.1.1.1.28339
+        TCP connection: 2.2.2.2.646 - 10.1.1.1.28339 ← INTERFACE IP
         State: Oper; Msgs sent/rcvd: 12/10; Downstream
         Up time: 00:00:08
         LDP discovery sources:
@@ -604,7 +608,7 @@ PE1# show mpls ldp neighbor
           10.1.1.2        10.1.2.1        2.2.2.2 
 ```
 
-Notice PE1's transport address changes to **10.1.1.1** in the second example.
+Notice PE1's transport address changes to **10.1.1.1**.
 
 ---
 
@@ -729,12 +733,10 @@ If the IGP next hop changes to P3, use label 300.
 
 ## Label Distribution Modes
 
-LDP supports two label distribution methods:
+LDP supports two label distribution modes:
 
-```text
-Downstream Unsolicited
-Downstream on Demand
-```
+- Downstream Unsolicited
+- Downstream on Demand
 
 The difference is whether a router advertises label bindings automatically, or only after another router requests them.
 
@@ -903,7 +905,7 @@ Main cost:
 Potentially slower convergence after an IGP next-hop change.
 ```
 
-> IOS XE routers **do not** use conservative label retention.
+> IOS XE routers **do not** use Conservative Label Retention.
 > It cannot be configured (as far as I know).
 
 ---
@@ -984,15 +986,13 @@ PE1 --- P1 --- P2 --- PE2
 FEC:
 
 ```text
-4.4.4.4/32
+4.4.4.4/32 (PE2 loopback)
 ```
-
-PE2 is the egress LSR for `4.4.4.4/32`.
 
 With Ordered Control Mode, label advertisement works from the egress side back toward the ingress side.
 
 ```text
-1. PE2 is the egress LSR for 4.4.4.4/32.
+1. PE2 owns 4.4.4.4/32.
    PE2 advertises implicit null or a local label to P2.
 
 2. P2 receives a label for 4.4.4.4/32 from PE2.
@@ -1021,55 +1021,37 @@ A simple MPLS/LDP core needs:
 1. CEF
 2. IGP reachability
 3. MPLS enabled globally
-4. LDP selected as the label protocol
+4. LDP selected as the label protocol (enabled by default)
 5. MPLS enabled on core-facing interfaces
 ```
 
 Example:
 
 ```text
-ip cef
+ip cef ← ENABLED BY DEFAULT
 
-mpls ip
-mpls label protocol ldp
+mpls ip ← ENABLED BY DEFAULT
+mpls label protocol ldp ← ENABLED BY DEFAULT
 
-interface GigabitEthernet0/0
+interface Ethernet0/0
  ip address 10.0.12.1 255.255.255.252
  mpls ip
 ```
 
-On many IOS/IOS XE platforms, `ip cef` and global `mpls ip` are enabled by default, but it is still useful to know the commands.
-
-The important interface-level command is:
+The only necessary command is:
 
 ```text
-mpls ip
+interface Ethernet0/0
+ mpls ip
 ```
 
 This enables MPLS forwarding and LDP on that interface.
 
----
-
-## LDP Router ID Configuration
-
-Use a loopback as the LDP router ID.
-
-Example:
-
-```text
-interface Loopback0
- ip address 1.1.1.1 255.255.255.255
-
-mpls ldp router-id Loopback0 force
-```
-
-The `force` keyword applies the change immediately, but it can reset existing LDP sessions.
-
-In a lab, that is usually fine.
-
-In a production network, be careful.
+I already covered how to configure the LDP **RID** and **transport address** above.
+Let's look at some other configurations.
 
 ---
+
 
 ## LDP Autoconfiguration
 
@@ -1098,33 +1080,7 @@ interface GigabitEthernet0/0
  no mpls ldp igp autoconfig
 ```
 
-This page is not covering LDP-IGP synchronization. That feature has its own page.
-
----
-
-## LDP Transport Address Configuration
-
-You can manually control the transport address advertised in LDP Hellos.
-
-Interface-level examples:
-
-```text
-interface GigabitEthernet0/0
- mpls ldp discovery transport-address interface
-```
-
-This tells the router to advertise the interface address as the transport address for Hellos sent on that interface.
-
-You can also specify an address:
-
-```text
-interface GigabitEthernet0/0
- mpls ldp discovery transport-address 1.1.1.1
-```
-
-In most normal designs, using the loopback/LDP router ID as the transport address is preferred because it is stable.
-
-However, the neighbor must have IP reachability to that address.
+LDP-IGP synchronization is another important topic with its own page. 
 
 ---
 
@@ -1149,13 +1105,7 @@ R2(config)# mpls ldp neighbor 1.1.1.1 password CISCO
 
 The neighbor IP used in the command is the remote LDP router ID, not necessarily the directly connected interface IP.
 
-Depending on platform and configuration style, changing LDP authentication can reset the LDP session.
-
-For CCIE-style labs, the main point is:
-
-```text
-Both sides must use the same password for the LDP TCP session.
-```
+> LDP authentication is covered in more detail in its own page.
 
 ---
 
@@ -1174,206 +1124,7 @@ Inbound label filtering  = control which remote labels you accept.
 
 For basic MPLS forwarding, label filtering is usually not required.
 
-But if labels are missing unexpectedly, always consider whether some filtering policy is blocking label advertisement or acceptance.
-
----
-
-## Verification Commands
-
-Useful commands:
-
-```text
-show mpls interfaces
-show mpls ldp discovery
-show mpls ldp neighbor
-show mpls ldp neighbor detail
-show mpls ldp bindings
-show mpls forwarding-table
-show ip route
-show ip cef
-```
-
----
-
-## Verify MPLS Interfaces
-
-Check which interfaces have MPLS enabled:
-
-```text
-show mpls interfaces
-```
-
-You want to see the core-facing interfaces listed.
-
-Example:
-
-```text
-Interface              IP            Tunnel   BGP Static Operational
-GigabitEthernet0/0     Yes           No       No  No     Yes
-GigabitEthernet0/1     Yes           No       No  No     Yes
-```
-
-If an interface is missing, check:
-
-```text
-interface GigabitEthernet0/0
- mpls ip
-```
-
-Or check whether LDP autoconfig is enabled under the IGP.
-
----
-
-## Verify LDP Discovery
-
-Check discovery:
-
-```text
-show mpls ldp discovery
-```
-
-This shows where LDP Hellos are being sent and received.
-
-Useful things to check:
-
-```text
-Is the correct interface listed?
-Is LDP transmitting and receiving Hellos?
-What is the local LDP identifier?
-What LDP ID is seen from the neighbor?
-```
-
-Example:
-
-```text
-Local LDP Identifier:
-    1.1.1.1:0
-
-Discovery Sources:
-    Interfaces:
-        GigabitEthernet0/0 (ldp): xmit/recv
-            LDP Id: 2.2.2.2:0
-```
-
-If you see `xmit` but not `recv`, the local router is sending Hellos but not receiving them.
-
-Check the neighbor's interface configuration.
-
----
-
-## Verify LDP Neighbors
-
-Check LDP sessions:
-
-```text
-show mpls ldp neighbor
-```
-
-A working neighbor should show an operational session.
-
-Useful things to check:
-
-```text
-Peer LDP Identifier
-Local LDP Identifier
-TCP connection
-Session state
-Discovery sources
-Addresses bound to the peer
-```
-
-Example:
-
-```text
-Peer LDP Ident: 2.2.2.2:0; Local LDP Ident 1.1.1.1:0
-    TCP connection: 2.2.2.2.646 - 1.1.1.1.12345
-    State: Oper
-```
-
-If discovery works but the session is not operational, check reachability to the transport address.
-
----
-
-## Verify Label Bindings
-
-Check label bindings:
-
-```text
-show mpls ldp bindings
-```
-
-For a specific prefix:
-
-```text
-show mpls ldp bindings 4.4.4.4 32
-```
-
-This command shows local and remote label bindings.
-
-You are looking for:
-
-```text
-Local binding
-Remote binding from the next-hop LDP neighbor
-```
-
-Example idea:
-
-```text
-lib entry: 4.4.4.4/32
-    local binding:  label: 100
-    remote binding: lsr: 2.2.2.2:0, label: 200
-```
-
-The local binding is what this router advertises to its neighbors.
-
-The remote binding is what this router learned from a neighbor.
-
----
-
-## Verify LFIB
-
-Check the MPLS forwarding table:
-
-```text
-show mpls forwarding-table
-```
-
-For a specific prefix:
-
-```text
-show mpls forwarding-table 4.4.4.4
-```
-
-The LFIB shows the actual forwarding action.
-
-Examples:
-
-```text
-Local label  Outgoing label  Prefix
-100          200             4.4.4.4/32
-```
-
-This means:
-
-```text
-If a packet arrives with label 100,
-swap it to label 200,
-and forward it to the next hop.
-```
-
-If the outgoing label is `Pop Label`, PHP is being used.
-
-```text
-Local label  Outgoing label  Prefix
-200          Pop Label       4.4.4.4/32
-```
-
-This means:
-
-```text
-Pop the label before forwarding to the next hop.
-```
+> Label filtering is covered in its own page.
 
 ---
 
@@ -1427,9 +1178,7 @@ Fix:
 ```text
 interface Loopback0
  ip address 1.1.1.1 255.255.255.255
-
-router ospf 1
- network 1.1.1.1 0.0.0.0 area 0
+ ip ospf 1 area 0
 
 mpls ldp router-id Loopback0 force
 ```
@@ -1556,7 +1305,7 @@ LDP provides labels.
 
 ### Misunderstanding 3: The LDP label represents the final customer route
 
-In a BGP-free core, the transport label usually represents the BGP next hop, not the final destination prefix.
+The transport label represents the BGP next hop, not the final destination prefix.
 
 Example:
 
@@ -1572,40 +1321,12 @@ The egress PE then forwards the IP packet normally.
 
 ---
 
-### Misunderstanding 4: LDP must run on CE routers
-
-CE routers do not run LDP in a normal MPLS L3VPN design.
-
-Only the provider MPLS routers run MPLS/LDP.
-
-```text
-CE = normal IP routing
-PE/P = MPLS/LDP
-```
-
----
-
-### Misunderstanding 5: LDP neighbors and IGP neighbors are the same thing
-
-They are different neighbor relationships.
-
-```text
-OSPF/IS-IS neighbor = IGP adjacency
-LDP neighbor        = label distribution session
-```
-
-In a basic directly connected MPLS core, they often exist on the same links.
-
-But they are still separate protocols.
-
----
-
 ## Key Points
 
 * LDP stands for Label Distribution Protocol.
 * LDP distributes label bindings.
 * A label binding maps a FEC to a label.
-* In basic MPLS, the FEC is usually an IGP prefix.
+* In basic MPLS, a FEC is basically equivalent to an IGP prefix.
 * The IGP chooses the next hop.
 * LDP provides the label for that next hop.
 * LDP uses UDP 646 for Hellos.
@@ -1613,11 +1334,11 @@ But they are still separate protocols.
 * Basic discovery is for directly connected LDP peers.
 * Targeted discovery is for non-directly-connected LDP peers.
 * The LDP ID is written as `<router-id>:<label-space-id>`.
-* Cisco IOS/IOS XE commonly uses a platform-wide label space, so the LDP ID often ends in `:0`.
+* The default is to use a platform-wide label space, so the LDP ID ends in `:0`.
 * Use a stable loopback as the LDP router ID.
 * The LDP router ID/transport address must be reachable.
 * `mpls ip` enables MPLS/LDP on an interface.
 * `show mpls ldp neighbor` verifies LDP sessions.
 * `show mpls ldp bindings` verifies label bindings.
 * `show mpls forwarding-table` verifies the LFIB.
-* LDP is what allows a BGP-free core to forward labeled traffic across the provider network.
+* The labels advertised by LDP allow a BGP-free core to forward labeled traffic across the provider network.

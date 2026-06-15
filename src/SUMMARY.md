@@ -5,7 +5,11 @@
 - [Basic MPLS Forwarding](mpls/3-basic-mpls-forwarding.md)
 - [PHP, Implicit Null, and Explicit Null](mpls/4-php-implicit-explicit-null.md)
 - [LDP](mpls/5-ldp.md)
-- [LDP-IGP Synchronization](mpls/ldp-igp-sync.md)
+  - [LDP Session Protection](mpls/6-ldp-session-protection.md)
+  - [LDP Authentication](mpls/7-ldp-authentication.md)
+  - [Label Filtering](mpls/8-label-filtering.md)
+  - [LDP-IGP Synchronization](mpls/9-ldp-igp-sync.md)
+
 
 # MPLS Layer 3 VPNs
 

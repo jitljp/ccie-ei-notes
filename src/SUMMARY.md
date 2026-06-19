@@ -1,5 +1,11 @@
 - [README](README.md)
 
+# VRF-Lite
+
+* [VRF-Lite Overview](vrf-lite/1-overview.md)
+* [VRF-Aware Routing](vrf-lite/2-vrf-aware-routing.md)
+* [VRF Route Leaking](vrf-lite/3-vrf-route-leaking.md)
+* [VASI](vrf-lite/4-vasi.md)
 
 # MPLS
 
@@ -36,30 +42,24 @@
 * [PE-CE OSPF](mpls-l3vpn-pe-ce/ospf/1-overview.md)
   * [OSPF Superbackbone](mpls-l3vpn-pe-ce/ospf/2-ospf-superbackbone.md)
   * [OSPF Domain ID](mpls-l3vpn-pe-ce/ospf/3-ospf-domain-id.md)
-  * [OSPF Route Types in L3VPN](mpls-l3vpn-pe-ce/ospf/4-ospf-route-types.md)
-  * [Down Bit](mpls-l3vpn-pe-ce/ospf/5-ospf-down-bit.md)
-  * [Domain Tag](mpls-l3vpn-pe-ce/ospf/6-ospf-domain-tag.md)
-  * [OSPF Sham Links](mpls-l3vpn-pe-ce/ospf/7-ospf-sham-links.md)
-  * [OSPF PE-CE Troubleshooting](mpls-l3vpn-pe-ce/ospf/8-ospf-troubleshooting.md)
+  * [OSPF Sham Links](mpls-l3vpn-pe-ce/ospf/4-ospf-sham-links.md)
+  * [OSPF Route Types in L3VPN](mpls-l3vpn-pe-ce/ospf/5-ospf-route-types.md)
+  * [Down Bit](mpls-l3vpn-pe-ce/ospf/6-ospf-down-bit.md)
+  * [Domain Tag](mpls-l3vpn-pe-ce/ospf/7-ospf-domain-tag.md)
 
 * [PE-CE EIGRP](mpls-l3vpn-pe-ce/eigrp/1-overview.md)
   * [EIGRP Route Types in L3VPN](mpls-l3vpn-pe-ce/eigrp/2-eigrp-route-types.md)
   * [EIGRP Metric Preservation](mpls-l3vpn-pe-ce/eigrp/3-eigrp-metric-preservation.md)
   * [EIGRP Site of Origin](mpls-l3vpn-pe-ce/eigrp/4-eigrp-site-of-origin.md)
-  * [EIGRP PE-CE Troubleshooting](mpls-l3vpn-pe-ce/eigrp/5-eigrp-troubleshooting.md)
 
 * [PE-CE BGP](mpls-l3vpn-pe-ce/bgp/1-overview.md)
   * [Basic PE-CE BGP Configuration](mpls-l3vpn-pe-ce/bgp/2-bgp-basic-configuration.md)
-  * [BGP AS Override](mpls-l3vpn-pe-ce/bgp/3-bgp-as-override.md)
-  * [BGP Allowas-in](mpls-l3vpn-pe-ce/bgp/4-bgp-allowas-in.md)
+  * [BGP AS-Override and Allowas-in](mpls-l3vpn-pe-ce/bgp/3-bgp-as-override-allowas.md)
+  * [BGP PE-CE Multihoming](mpls-l3vpn-pe-ce/bgp/4-bgp-multihoming.md)
   * [BGP Site of Origin](mpls-l3vpn-pe-ce/bgp/5-bgp-site-of-origin.md)
-  * [BGP PE-CE Multihoming](mpls-l3vpn-pe-ce/bgp/6-bgp-multihoming.md)
-  * [BGP PE-CE Troubleshooting](mpls-l3vpn-pe-ce/bgp/7-bgp-troubleshooting.md)
 
 # Advanced MPLS L3VPN Topics
 
-* [VRF Route Leaking](mpls-l3vpn-advanced/vrf-route-leaking.md)
-* [Extranet VPNs](mpls-l3vpn-advanced/extranet-vpns.md)
-* [6PE](mpls-l3vpn-advanced/6pe.md)
-* [6VPE](mpls-l3vpn-advanced/6vpe.md)
-* [Inter-AS MPLS VPNs](mpls-l3vpn-advanced/inter-as-mpls-vpns.md)
+* [BGP Import Path Selection](mpls-l3vpn-advanced/1-import-path.md)
+* [6PE](mpls-l3vpn-advanced/2-6pe.md)
+* [6VPE](mpls-l3vpn-advanced/3-6vpe.md)

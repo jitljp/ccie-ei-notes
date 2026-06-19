@@ -305,10 +305,10 @@ Important L3VPN-specific topics include:
 ```text
 OSPF superbackbone
 Domain ID
+Sham links
 OSPF route type preservation
 Down Bit
 Domain Tag
-Sham links
 ```
 
 These are the topics covered in the following pages.
@@ -370,6 +370,33 @@ O E2 10.10.10.0/24 [110/1] via 192.168.2.1
 ```
 
 The Domain ID is one of the key reasons OSPF L3VPN behavior can look different from ordinary redistribution.
+
+---
+
+## Sham Links
+
+A sham link is used when two customer sites have both:
+
+```text
+An MPLS VPN path
+A direct OSPF backdoor link
+```
+
+Example:
+
+```text
+CE1 -------- backdoor link -------- CE2
+ |                                  |
+PE1 ========= MPLS VPN ============ PE2
+```
+
+Without a sham link, OSPF may prefer the backdoor link because intra-area OSPF routes are preferred over inter-area routes.
+
+A sham link can make the MPLS VPN path appear as an intra-area OSPF path between the PE routers.
+
+This allows normal OSPF cost comparison between the MPLS VPN path and the backdoor path.
+
+Sham links are a special OSPF L3VPN tool, not something used in basic PE-CE OSPF designs.
 
 ---
 
@@ -447,33 +474,6 @@ Another PE can use that tag to avoid sending the same route back into MP-BGP.
 ```
 
 The Down Bit and Domain Tag both help prevent loops, but they apply in different OSPF route situations.
-
----
-
-## Sham Links
-
-A sham link is used when two customer sites have both:
-
-```text
-An MPLS VPN path
-A direct OSPF backdoor link
-```
-
-Example:
-
-```text
-CE1 -------- backdoor link -------- CE2
- |                                  |
-PE1 ========= MPLS VPN ============ PE2
-```
-
-Without a sham link, OSPF may prefer the backdoor link because intra-area OSPF routes are preferred over inter-area routes.
-
-A sham link can make the MPLS VPN path appear as an intra-area OSPF path between the PE routers.
-
-This allows normal OSPF cost comparison between the MPLS VPN path and the backdoor path.
-
-Sham links are a special OSPF L3VPN tool, not something used in basic PE-CE OSPF designs.
 
 ---
 

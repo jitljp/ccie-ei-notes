@@ -252,7 +252,7 @@ There are three main options:
 
 `all` is the simplest and most common, but I'll also cover some details about `bestpath`.
 
-I can't get `multipaths` working in my lab, but as the name suggests it imports the best route and all paths marked as multipaths
+I can't get `multipaths` working in my lab, but as the name suggests it imports the best route and all paths marked for multipath
 (indicated by code `m` in the VPNv4 table).
 
 ### import path selection all
@@ -916,7 +916,7 @@ Use import path selection as an additional tool when the RDs are the same or mus
 * `import path selection all` imports all eligible matching paths up to the path limit.
 * `import path selection bestpath` imports the best available path that matches the VRF import RT.
 * `import path selection bestpath strict` imports only the actual best VPNv4 path, and only if it matches the VRF import RT.
-* `import path selection multipaths` imports the best path and paths marked as multipath, if they match the VRF import RT.
+* `import path selection multipaths` imports the best path and paths marked for multipath, if they match the VRF import RT.
 * `import path limit` limits the number of imported paths per prefix.
 * `maximum-paths` controls how many eligible paths can be installed in the VRF routing table.
 * For same-RD load sharing, you usually need `import path selection all`, `import path limit 2`, and `maximum-paths ibgp 2`.

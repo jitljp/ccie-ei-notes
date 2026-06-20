@@ -4,8 +4,14 @@
 
 * [VRF-Lite Overview](vrf-lite/1-overview.md)
 * [VRF-Aware Routing](vrf-lite/2-vrf-aware-routing.md)
-* [VRF Route Leaking](vrf-lite/3-vrf-route-leaking.md)
-* [VASI](vrf-lite/4-vasi.md)
+* [VRF Route Leaking](vrf-lite/route-leaking/1-overview.md)
+  * [Static VRF Route Leaking](vrf-lite/route-leaking/2-static-route-leaking.md)
+  * [Global-to-VRF Static Leaking](vrf-lite/route-leaking/3-global-vrf-static-leaking.md)
+  * [Route-Target Import/Export](vrf-lite/route-leaking/4-route-target-import-export.md)
+  * [Import and Export Maps](vrf-lite/route-leaking/5-import-export-maps.md)
+  * [Global-to-VRF BGP Prefix Import](vrf-lite/route-leaking/6-global-vrf-bgp-prefix-import.md)
+  * [Route Replication](vrf-lite/route-leaking/7-route-replication.md)
+  * [VASI](vrf-lite/route-leaking/8-vasi.md)
 
 # MPLS
 

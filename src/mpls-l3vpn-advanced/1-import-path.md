@@ -135,7 +135,7 @@ VRF table:
 192.168.23.0/24 via 4.4.4.4 only
 ```
 
-Even if PE1 has two VPNv4 paths, the VRF only imports of them.
+Even if PE1 has two VPNv4 paths, the VRF only imports one of them.
 
 If only one path is imported into the VRF, `maximum-paths` cannot install both next hops.
 
@@ -661,7 +661,7 @@ or:
 maximum-paths ibgp import 2
 ```
 
-In newer IOS releases, this older `import` option is converted to the newer syntax:
+In newer releases, this older `import` option is converted to the newer syntax:
 
 ```text
 PE1(config-router-af)# maximum-paths ibgp 2 import 2
@@ -669,7 +669,7 @@ PE1(config-router-af)# maximum-paths ibgp 2 import 2
 %      Converting to 'import path selection all; import path limit 2'.
 ```
 
-For modern notes, use the newer syntax:
+In modern IOS XE, use the newer syntax:
 
 ```text
 router bgp 65000

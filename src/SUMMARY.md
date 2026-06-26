@@ -3,7 +3,13 @@
 # VRF-Lite
 
 * [VRF-Lite Overview](vrf-lite/1-overview.md)
-* [VRF-Aware Routing](vrf-lite/2-vrf-aware-routing.md)
+* [VRF-Aware Routing](vrf-lite/vrf-aware-routing/1-overview.md)
+  * [VRF-Aware Static Routing](vrf-lite/vrf-aware-routing/2-static-routing.md)
+  * [VRF-Aware OSPFv2](vrf-lite/vrf-aware-routing/3-ospfv2.md)
+  * [VRF-Aware OSPFv3](vrf-lite/vrf-aware-routing/4-ospfv3.md)
+  * [VRF-Aware EIGRP](vrf-lite/vrf-aware-routing/5-eigrp.md)
+  * [VRF-Aware BGP](vrf-lite/vrf-aware-routing/6-bgp.md)
+  * [VRF-Aware Services](vrf-lite/vrf-aware-routing/7-services.md)
 * [VRF Route Leaking](vrf-lite/route-leaking/1-overview.md)
   * [Static VRF Route Leaking](vrf-lite/route-leaking/2-static-route-leaking.md)
   * [Global-to-VRF Static Leaking](vrf-lite/route-leaking/3-global-vrf-static-leaking.md)

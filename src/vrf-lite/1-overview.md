@@ -63,8 +63,6 @@ The prefix is the same, but the routing context is different.
 
 **VRF-Lite** means VRFs are used without MPLS in the forwarding path.
 
-VRF-Lite is also commonly called **Multi-VRF CE**.
-
 In VRF-Lite, the router separates traffic by assigning Layer 3 interfaces to VRFs.
 
 ```text
@@ -97,11 +95,11 @@ The difference is how routes and packets are carried between routers.
 |---|---|---|
 | Uses VRFs | Yes | Yes |
 | Uses MPLS labels | No | Yes |
-| Uses LDP or RSVP/SR transport | No | Usually yes |
+| Uses LDP | No | Usually yes |
 | Uses MP-BGP VPNv4/VPNv6 | Not required | Yes |
 | Main purpose | Local routing-table separation | Provider VPN service across a core |
 | Core awareness | No MPLS core | P routers forward labeled traffic |
-| Typical role | Enterprise router, CE, firewall edge, lab router | PE router in provider-style VPN |
+| Typical role | Enterprise router, CE, firewall edge, lab router | PE router in MPLS L3VPN |
 
 VRF-Lite is often used at the edge of a network.
 
@@ -110,8 +108,6 @@ MPLS L3VPN uses VRFs on PE routers and carries VPN routes across a provider core
 ## Global Routing Table
 
 The normal routing table is often called the **global routing table**.
-
-It is not the same as a VRF.
 
 ```text
 show ip route
@@ -174,10 +170,10 @@ Both customers use the same subnet.
                          R1
                   +---------------+
                   |               |
-CUSTOMER_A -------| Gi0/1         |
+CUSTOMER_A -------| E0/1          |
 10.10.10.0/24     |               |
                   |               |
-CUSTOMER_B -------| Gi0/2         |
+CUSTOMER_B -------| E0/2          |
 10.10.10.0/24     +---------------+
 ```
 
@@ -197,48 +193,28 @@ With VRFs, the addresses are in different routing contexts.
 Create the VRFs.
 
 ```text
-R1(config)#vrf definition CUSTOMER_A
-R1(config-vrf)#address-family ipv4
-R1(config-vrf-af)#exit-address-family
+R1(config)# vrf definition CUSTOMER_A
+R1(config-vrf)# address-family ipv4
 
-R1(config)#vrf definition CUSTOMER_B
-R1(config-vrf)#address-family ipv4
-R1(config-vrf-af)#exit-address-family
+R1(config)# vrf definition CUSTOMER_B
+R1(config-vrf)# address-family ipv4
 ```
 
 Assign interfaces to the VRFs.
 
 ```text
-R1(config)#interface GigabitEthernet0/1
-R1(config-if)#vrf forwarding CUSTOMER_A
-R1(config-if)#ip address 10.10.10.1 255.255.255.0
-R1(config-if)#no shutdown
+R1(config)# interface Ethernet0/1
+R1(config-if)# vrf forwarding CUSTOMER_A
+R1(config-if)# ip address 10.10.10.1 255.255.255.0
+R1(config-if)# no shutdown
 
-R1(config)#interface GigabitEthernet0/2
-R1(config-if)#vrf forwarding CUSTOMER_B
-R1(config-if)#ip address 10.10.10.1 255.255.255.0
-R1(config-if)#no shutdown
+R1(config)# interface Ethernet0/2
+R1(config-if)# vrf forwarding CUSTOMER_B
+R1(config-if)# ip address 10.10.10.1 255.255.255.0
+R1(config-if)# no shutdown
 ```
 
-The exact command can vary by platform and software version.
-
-Some platforms use:
-
-```text
-ip vrf forwarding CUSTOMER_A
-```
-
-Other platforms use:
-
-```text
-vrf forwarding CUSTOMER_A
-```
-
-The concept is the same.
-
-The interface is placed into a VRF.
-
-## Configuration Order
+### Configuration Order
 
 Configure the VRF before assigning the interface IP address.
 
@@ -254,18 +230,17 @@ Recommended order:
 Example:
 
 ```text
-R1(config)#vrf definition CUSTOMER_A
-R1(config-vrf)#address-family ipv4
-R1(config-vrf-af)#exit-address-family
+R1(config)# vrf definition CUSTOMER_A
+R1(config-vrf)# address-family ipv4
 
-R1(config)#interface GigabitEthernet0/1
-R1(config-if)#vrf forwarding CUSTOMER_A
-R1(config-if)#ip address 10.10.10.1 255.255.255.0
+R1(config)# interface Ethernet0/1
+R1(config-if)# vrf forwarding CUSTOMER_A
+R1(config-if)# ip address 10.10.10.1 255.255.255.0
 ```
 
-On many Cisco platforms, changing VRF membership on an interface removes the existing Layer 3 address.
+Changing VRF membership on an interface removes the existing IP address.
 
-This is why it is common to configure `vrf forwarding` before `ip address`.
+This is why you should configure `vrf forwarding` before `ip address`.
 
 ## Forwarding Behavior
 
@@ -314,6 +289,10 @@ The global table cannot use VRF routes by default.
 
 To allow communication between VRFs, you must configure route leaking or use a service path.
 
+> A **service path** means traffic does not move directly from one VRF to another by route leaking.
+>
+> Instead, traffic is sent through some intermediate device that connects the VRFs.
+
 Route leaking is covered later in this section.
 
 ## VRF-Aware Commands
@@ -334,18 +313,16 @@ Without the `vrf` keyword, the router uses the global routing table.
 Example:
 
 ```text
-R1#ping 10.10.10.2
+R1# ping 10.10.10.2
 ```
 
 This uses the global routing table.
 
 ```text
-R1#ping vrf CUSTOMER_A 10.10.10.2
+R1# ping vrf CUSTOMER_A 10.10.10.2
 ```
 
 This uses the `CUSTOMER_A` routing table.
-
-This is one of the most common VRF troubleshooting points.
 
 ## Routing Protocols and VRFs
 
@@ -381,10 +358,10 @@ VRFs are often configured with an RD and route targets.
 
 ```text
 vrf definition CUSTOMER_A
- rd 65000:10
+ rd 65000:1
  address-family ipv4
-  route-target export 65000:10
-  route-target import 65000:10
+  route-target export 65000:1
+  route-target import 65000:1
 ```
 
 These values are important in MPLS L3VPN and BGP-based route leaking.
@@ -400,34 +377,24 @@ CUSTOMER_A: 10.10.10.0/24
 CUSTOMER_B: 10.10.10.0/24
 ```
 
-With RDs, these can become unique VPN routes.
+By adding RDs, these can become unique VPN routes.
 
 ```text
-65000:10:10.10.10.0/24
-65000:20:10.10.10.0/24
+65000:1:10.10.10.0/24
+65000:2:10.10.10.0/24
 ```
+
+Although the IPv4 prefix is the same, the RDs make them unique VPNv4 routes.
 
 **RT** stands for **Route Target**.
 
 Route targets control which VPN routes are imported into or exported from a VRF.
-
-In basic VRF-Lite, RDs and RTs are not what separate traffic on the local router.
-
-The interface-to-VRF mapping separates traffic.
 
 RDs and RTs matter when using BGP-based route leaking or MPLS L3VPN-style control-plane behavior.
 
 ## Management VRFs
 
 Many routers have a dedicated management VRF.
-
-Example names include:
-
-```text
-Mgmt-vrf
-MGMT
-management
-```
 
 A management VRF separates management traffic from production traffic.
 
@@ -446,42 +413,10 @@ Example:
 
 ```text
 ntp server vrf MGMT 192.0.2.10
-ip tacacs source-interface GigabitEthernet0/0
+ip tacacs source-interface Ethernet0/0
 ```
 
-The exact syntax depends on the feature and platform.
-
-## Verification Commands
-
-Useful commands:
-
-```text
-show vrf
-show vrf detail
-show vrf interfaces
-show ip interface brief vrf all
-show ip route vrf CUSTOMER_A
-show ip route vrf CUSTOMER_B
-show ip cef vrf CUSTOMER_A
-show running-config | section vrf
-```
-
-Test reachability from a specific VRF.
-
-```text
-ping vrf CUSTOMER_A 10.10.10.2
-traceroute vrf CUSTOMER_A 10.10.10.2
-```
-
-Check the global routing table separately.
-
-```text
-show ip route
-```
-
-Do not assume a global route and a VRF route are in the same table.
-
-They are separate unless route leaking is configured.
+The second command doesn't specify a VRF, but assume that Ethernet0/0 is assigned to the management VRF.
 
 ## Common Mistakes
 
@@ -515,7 +450,7 @@ ping vrf CUSTOMER_A 10.10.10.2
 
 ### Configuring the IP Address Before VRF Membership
 
-This order can cause the IP address to be removed on many platforms:
+This order causes the IP address to be removed:
 
 ```text
 interface GigabitEthernet0/1
@@ -531,46 +466,14 @@ interface GigabitEthernet0/1
  ip address 10.10.10.1 255.255.255.0
 ```
 
-### Expecting Route Leaking by Default
-
-VRFs are separate by default.
-
-A route in one VRF is not automatically available in another VRF.
-
-Route leaking must be configured intentionally.
-
-### Assuming VRF-Lite Means MPLS
-
-VRF-Lite does not use MPLS labels.
-
-VRF-Lite is local VRF separation without an MPLS VPN core.
-
 ## Key Points
 
-VRF-Lite allows one physical router or Layer 3 switch to act like multiple virtual routers.
-
-Each VRF has its own routing table.
-
-Interfaces are assigned to VRFs.
-
-The incoming interface determines which VRF routing table is used.
-
-The same IP prefix can exist in multiple VRFs.
-
-The global routing table and VRF routing tables are separate.
-
-VRFs do not share routes by default.
-
-Use VRF-aware commands to test and verify VRF traffic.
-
-VRF-Lite does not require MPLS.
-
-Route leaking is a separate topic.
-
-## References
-
-Cisco, **Configuring VRF-lite**, IP Routing Configuration Guide, Cisco IOS XE 17.17.x:
-https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9200/software/release/17-17/configuration_guide/rtng/b_1717_rtng_9200_cg/configuring_vrf_lite.html
-
-Cisco, **Multi-VRF Support**, IP Routing Configuration Guide:
-https://www.cisco.com/c/en/us/td/docs/routers/ios-xe/ip-routing/b-ip-routing/m_mp-multi-vrf-vrf-lite.html
+- VRF-Lite allows one physical router or Layer 3 switch to act like multiple virtual routers.
+- Each VRF has its own routing table.
+- Interfaces are assigned to VRFs.
+- The incoming interface determines which VRF routing table is used.
+- The same IP prefix can exist in multiple VRFs.
+- The global routing table and VRF routing tables are separate.
+- VRFs do not share routes by default.
+- Use VRF-aware commands to test and verify VRF traffic.
+- VRF-Lite does not require MPLS.

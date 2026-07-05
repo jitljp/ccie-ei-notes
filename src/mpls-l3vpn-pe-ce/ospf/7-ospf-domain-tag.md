@@ -18,10 +18,11 @@ It does not apply to Type 3 summary LSAs.
 I'll use the same topology as in the Down Bit page:
 
 ```
-CE1 --- PE1 === MPLS VPN === PE2 --- CE2
-                  ||            \    /
-                  ||              CE3
-                  PE3______________/
+                        PE2 --- CE2
+                        //       |
+CE1 --- PE1 === MPLS VPN         | SITE B
+  SITE A                \\       |
+                        PE3 --- CE3
 ```
 
 ---

@@ -804,7 +804,7 @@ This accepts only labels for `5.5.5.5/32` from peer `3.3.3.3`.
   * By default, it creates label bindings for all non-BGP prefixes.
   * Enter `mpls ldp label` config mode to modify.
   * `allocate global host-routes` allocates labels only for /32 host routes.
-  * `allocate global prefix-list <prefix-list>` alloates labels only for permitted prefixes.
+  * `allocate global prefix-list <prefix-list>` allocates labels only for permitted prefixes.
 * Outbound label filtering controls which local bindings the router advertises to peers.
   * Use `no mpls ldp advertise labels` to disable the default behavior of advertising all local labels.
   * Use `mpls ldp advertise-labels for <prefix-acl>` to advertise labels for prefixes whose network address is permitted.

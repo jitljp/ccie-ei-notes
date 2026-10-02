@@ -5,6 +5,7 @@ language = "en"
 
 [output.html]
 additional-css = ["custom.css"]
+no-section-label = true
 
 [output.html.fold]
 enable = true

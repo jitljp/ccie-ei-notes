@@ -1,1 +1,0 @@
-# Anycast RP Source Synchronization

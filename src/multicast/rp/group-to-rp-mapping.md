@@ -1,1 +1,0 @@
-# Group-to-RP Mapping

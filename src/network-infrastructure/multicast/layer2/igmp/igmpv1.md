@@ -276,8 +276,8 @@ Group Address    Interface                Uptime    Expires   Last Reporter   Gr
 For testing, a Cisco router can act as a multicast receiver by joining a group on an interface:
 
 ```text
-RCV(config)# interface 
-RCV(config-if)# ip igmp join-group 239.1.1.1
+Rec1(config)# interface 
+Rec1(config-if)# ip igmp join-group 239.1.1.1
 ```
 
 `ip igmp join-group` makes the router itself a member of the multicast group.
@@ -289,7 +289,7 @@ This is particularly useful in multicast labs because a router can act as a rece
 The membership can be verified with:
 
 ```text
-RCV#show ip igmp interface e0/0
+Rec1#show ip igmp interface e0/0
 Ethernet0/0 is up, line protocol is up
   Internet address is 10.3.4.10/24
   IGMP is enabled on interface
@@ -304,7 +304,7 @@ Ethernet0/0 is up, line protocol is up
   Multicast groups joined by this system (number of users):
       239.1.1.1(1)
 
-RCV# show ip igmp groups
+Rec1# show ip igmp groups
 IGMP Connected Group Membership
 Group Address    Interface                Uptime    Expires   Last Reporter   Group Accounted
 239.1.1.1        Ethernet0/0              00:01:27  never     10.3.4.10  

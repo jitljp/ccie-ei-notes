@@ -41,6 +41,7 @@
         - [IGMPv2 Membership Reports](network-infrastructure/multicast/layer2/igmp/igmpv2-reports.md)
         - [IGMPv2 Report Suppression](network-infrastructure/multicast/layer2/igmp/igmpv2-report-suppression.md)
         - [IGMPv2 Leave Process](network-infrastructure/multicast/layer2/igmp/igmpv2-leave.md)
+        - [IGMPv2-IGMPv1 Compatibility](network-infrastructure/multicast/layer2/igmp/igmpv2-compatibility.md)
 
       - [IGMPv3](network-infrastructure/multicast/layer2/igmp/igmpv3.md)
         - [IGMPv3 Queries](network-infrastructure/multicast/layer2/igmp/igmpv3-queries.md)

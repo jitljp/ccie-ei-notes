@@ -1,1 +1,0 @@
-# IGMP Snooping Querier

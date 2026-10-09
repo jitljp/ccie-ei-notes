@@ -1,1 +1,0 @@
-# IGMP Querier Configuration

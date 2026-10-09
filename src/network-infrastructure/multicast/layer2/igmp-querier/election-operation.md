@@ -1,1 +1,0 @@
-# Querier Election and Operation

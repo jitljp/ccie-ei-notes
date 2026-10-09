@@ -62,15 +62,14 @@
       - [PIM Snooping](network-infrastructure/multicast/layer2/snooping/pim-snooping.md)
 
     - [1.6.a (iii) IGMP Querier](network-infrastructure/multicast/layer2/igmp-querier/overview.md)
-      - [Why an IGMP Querier Is Required](network-infrastructure/multicast/layer2/igmp-querier/why-querier.md)
-      - [Querier Election and Operation](network-infrastructure/multicast/layer2/igmp-querier/election-operation.md)
-      - [IGMP Querier Configuration](network-infrastructure/multicast/layer2/igmp-querier/configuration.md)
+      - [IGMP Querier Operation and Configuration](network-infrastructure/multicast/layer2/igmp-querier/querier-operation.md)
       - [IGMP Snooping Querier](network-infrastructure/multicast/layer2/igmp-querier/snooping-querier.md)
 
     - [1.6.a (iv) IGMP Filter](network-infrastructure/multicast/layer2/igmp-filter/overview.md)
       - [IGMP Profiles](network-infrastructure/multicast/layer2/igmp-filter/igmp-profiles.md)
-      - [Permit and Deny Group Membership](network-infrastructure/multicast/layer2/igmp-filter/group-filtering.md)
-      - [IGMP Maximum Groups](network-infrastructure/multicast/layer2/igmp-filter/maximum-groups.md)
+      - [Applying IGMP Filters](network-infrastructure/multicast/layer2/igmp-filter/group-filtering.md)
+      - [IGMP Maximum Groups and Throttling](network-infrastructure/multicast/layer2/igmp-filter/maximum-groups.md)
+      - [IGMP Filtering on Routed Interfaces](network-infrastructure/multicast/layer2/igmp-filter/routed-interfaces.md)
 
     - [1.6.a (v) MLD](network-infrastructure/multicast/layer2/mld/overview.md)
       - [IPv6 Multicast Addressing](network-infrastructure/multicast/layer2/mld/ipv6-multicast-addressing.md)

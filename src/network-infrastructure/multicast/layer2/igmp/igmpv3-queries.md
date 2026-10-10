@@ -713,8 +713,11 @@ Important Query-related knobs include:
 ! Periodic General Query interval
 R3(config-if)# ip igmp query-interval 60
 
-! Max Response Time for General Queries
+! IGMPv2 Max Response Time for General Queries
 R3(config-if)# ip igmp query-max-response-time 10
+
+! IGMPv3 Max Response Time for General Queries
+R3(config-if)# ip igmp v3-query-max-response-time 10
 
 ! Robustness Variable advertised as QRV
 R3(config-if)# ip igmp robustness-variable 2
@@ -726,13 +729,33 @@ R3(config-if)# ip igmp last-member-query-interval 1000
 R3(config-if)# ip igmp last-member-query-count 2
 ```
 
+### IGMPv3 Query Max Response Time
+
+IOS XE provides a **separate command** to set the Max Response Time advertised in **IGMPv3 General Queries**:
+
+```text
+R3(config-if)# ip igmp v3-query-max-response-time 30
+```
+
+This is distinct from the older `ip igmp query-max-response-time` command used for IGMPv2 Queries.
+
+| Command | Supported Range | Default |
+|---|---:|---:|
+| `ip igmp query-max-response-time` | 1–25 seconds | 10 seconds |
+| `ip igmp v3-query-max-response-time` | 1–3175 seconds | 10 seconds |
+
+The much larger IGMPv3 range is possible because the **Max Resp Code** supports floating-point encoding for values greater than 12.7 seconds. Although the IOS XE command takes an integer number of seconds, the value advertised on the wire must use an encodable Max Resp Code and may not exactly match the configured value.
+
+These commands control the response time for **General Queries**. Group-Specific and Group-and-Source-Specific Queries use the **Last Member Query Interval** for their Max Response Time, as explained above.
+
 Important IOS XE defaults include:
 
 | Parameter | Default |
 |---|---:|
 | IGMP version | 2 |
 | Query Interval | 60 seconds |
-| Maximum Query Response Time | 10 seconds |
+| IGMPv2 Query Max Response Time | 10 seconds |
+| IGMPv3 Query Max Response Time | 10 seconds |
 | Robustness Variable | 2 |
 | Last Member Query Interval | 1000 ms |
 | Last Member Query Count | 2 |

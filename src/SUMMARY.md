@@ -74,7 +74,9 @@
       - [IPv6 Multicast Addressing](network-infrastructure/multicast/layer2/mld/ipv6-multicast-addressing.md)
       - [MLDv1](network-infrastructure/multicast/layer2/mld/mldv1.md)
       - [MLDv2](network-infrastructure/multicast/layer2/mld/mldv2.md)
-      - [MLD Source Filtering](network-infrastructure/multicast/layer2/mld/source-filtering.md)
+      - [MLDv2 Source Filtering](network-infrastructure/multicast/layer2/mld/source-filtering.md)
+      - [MLD Querier Operation](network-infrastructure/multicast/layer2/mld/querier.md)
+      - [MLD Filtering and Limits](network-infrastructure/multicast/layer2/mld/filtering.md)
       - [MLD Snooping](network-infrastructure/multicast/layer2/mld/mld-snooping.md)
 
   - [1.6.b Reverse Path Forwarding Check](network-infrastructure/multicast/rpf/overview.md)

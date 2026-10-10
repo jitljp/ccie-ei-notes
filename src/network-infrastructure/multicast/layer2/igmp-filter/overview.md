@@ -153,6 +153,18 @@ On Catalyst 9000 IOS XE switches:
 - IGMPv3 join and leave messages are not supported by the IGMP profile filtering feature.
 - IGMP profile filtering is based on **multicast group addresses**, not the source-specific INCLUDE/EXCLUDE filtering supported by IGMPv3.
 
+## IGMP Snooping Dependency
+
+Layer 2 IGMP filtering and throttling require **IGMP snooping** to be enabled.
+
+These features operate on dynamically learned multicast memberships maintained by IGMP snooping.
+
+If snooping is disabled, the switch cannot enforce the corresponding membership restrictions as intended.
+
+This applies to `ip igmp filter` and `ip igmp max-groups`.
+
+The Layer 3 equivalents, `ip igmp access-group` and `ip igmp limit`, operate independently of IGMP snooping because they control the router's own IGMP membership state.
+
 ## Key Points
 
 - **IGMP filtering** controls which multicast groups a Layer 2 port can join.

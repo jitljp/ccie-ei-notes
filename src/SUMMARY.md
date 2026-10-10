@@ -66,8 +66,7 @@
       - [IGMP Snooping Querier](network-infrastructure/multicast/layer2/igmp-querier/snooping-querier.md)
 
     - [1.6.a (iv) IGMP Filter](network-infrastructure/multicast/layer2/igmp-filter/overview.md)
-      - [IGMP Profiles](network-infrastructure/multicast/layer2/igmp-filter/igmp-profiles.md)
-      - [Applying IGMP Filters](network-infrastructure/multicast/layer2/igmp-filter/group-filtering.md)
+      - [IGMP Profiles and Filtering](network-infrastructure/multicast/layer2/igmp-filter/igmp-profiles.md)
       - [IGMP Maximum Groups and Throttling](network-infrastructure/multicast/layer2/igmp-filter/maximum-groups.md)
       - [IGMP Filtering on Routed Interfaces](network-infrastructure/multicast/layer2/igmp-filter/routed-interfaces.md)
 

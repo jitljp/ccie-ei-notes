@@ -1,1 +1,1 @@
-# PIMv6 Anycast RP Operation
+# Anycast RP Addressing and Operation

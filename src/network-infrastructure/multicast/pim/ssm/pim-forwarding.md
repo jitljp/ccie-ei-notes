@@ -1,1 +1,1 @@
-# PIM SSM Forwarding
+# SSM Receiver Signaling and PIM Forwarding

@@ -251,7 +251,43 @@ On a shared network, checking the incoming interface alone does not distinguish 
 
 **PIM Assert** resolves duplicate forwarding and can also influence the upstream RPF neighbor used for a particular multicast tree.
 
-PIM Assert is covered in the PIM section.
+### PIM Assert and RPF Neighbor Selection
+
+**PIM Assert can override the normal RPF neighbor selection** when multiple routers compete to forward the same multicast traffic onto a shared LAN.
+
+For example, suppose R3's RPF lookup toward source `10.10.10.10` selects:
+
+```text
+RPF Interface: Ethernet0/0
+RPF Neighbor:  10.0.123.2 (R2)
+```
+
+However, R1 wins a PIM Assert election for `(10.10.10.10, 239.1.1.1)` on that shared LAN.
+
+R3 can then use R1 as its upstream neighbor for that `(S,G)` state:
+
+```text
+Before Assert:
+RPF Interface: Ethernet0/0
+RPF Neighbor:  R2
+
+After Assert:
+RPF Interface: Ethernet0/0
+Upstream PIM Neighbor: R1 (Assert winner)
+```
+
+**The RPF interface and underlying routing information remain unchanged.** The Assert winner takes precedence over the normally selected next hop for the affected multicast state.
+
+RFC 7761 defines this Assert-aware neighbor selection as **RPF' (RPF prime)**:
+
+- `RPF'(S,G)`: Assert-aware upstream neighbor toward the source.
+- `RPF'(*,G)`: Assert-aware upstream neighbor toward the RP.
+
+PIM Join/Prune messages are directed toward the effective upstream neighbor, which may differ from the next hop selected by the multicast routing information base (MRIB).
+
+The Assert override applies to the affected multicast state on the selected RPF interface, not globally to every multicast group or source.
+
+The complete election process is covered in [PIM Assert](assert.md).
 
 ## RPF for (S,G) and (*,G) State
 

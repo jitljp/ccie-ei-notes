@@ -1,1 +1,1 @@
-# Static SSM Mapping
+# Static and DNS-Based SSM Mapping

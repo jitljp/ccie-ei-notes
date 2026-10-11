@@ -82,8 +82,8 @@
   - [1.6.b Reverse Path Forwarding Check](network-infrastructure/multicast/rpf/overview.md)
     - [RPF Interface and Neighbor](network-infrastructure/multicast/rpf/rpf-interface-neighbor.md)
     - [RPF Lookup and Tie-Breaking](network-infrastructure/multicast/rpf/rpf-lookup.md)
-    - [RPF for (S,G) State](network-infrastructure/multicast/rpf/source-tree-rpf.md)
-    - [RPF for (*,G) State](network-infrastructure/multicast/rpf/shared-tree-rpf.md)
+    - [Static Multicast Routes](network-infrastructure/multicast/rpf/static-mroutes.md)
+    - [RPF for Source and Shared Trees](network-infrastructure/multicast/rpf/tree-rpf.md)
     - [RPF Failures](network-infrastructure/multicast/rpf/rpf-failures.md)
 
   - [1.6.c PIM](network-infrastructure/multicast/pim/overview.md)

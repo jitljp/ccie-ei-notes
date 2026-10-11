@@ -1,1 +1,0 @@
-# RPF for (*,G) State

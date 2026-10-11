@@ -80,12 +80,10 @@
       - [MLD Snooping](network-infrastructure/multicast/layer2/mld/mld-snooping.md)
 
   - [1.6.b Reverse Path Forwarding Check](network-infrastructure/multicast/rpf/overview.md)
-    - [RPF Interface](network-infrastructure/multicast/rpf/rpf-interface.md)
-    - [RPF Neighbor](network-infrastructure/multicast/rpf/rpf-neighbor.md)
-    - [RPF Lookup](network-infrastructure/multicast/rpf/rpf-lookup.md)
+    - [RPF Interface and Neighbor](network-infrastructure/multicast/rpf/rpf-interface-neighbor.md)
+    - [RPF Lookup and Tie-Breaking](network-infrastructure/multicast/rpf/rpf-lookup.md)
     - [RPF for (S,G) State](network-infrastructure/multicast/rpf/source-tree-rpf.md)
     - [RPF for (*,G) State](network-infrastructure/multicast/rpf/shared-tree-rpf.md)
-    - [RPF Tie-Breaking](network-infrastructure/multicast/rpf/tie-breaking.md)
     - [RPF Failures](network-infrastructure/multicast/rpf/rpf-failures.md)
 
   - [1.6.c PIM](network-infrastructure/multicast/pim/overview.md)
@@ -147,6 +145,7 @@
       - [Multicast Boundaries](network-infrastructure/multicast/pim/filtering/multicast-boundary.md)
       - [Administratively Scoped Multicast](network-infrastructure/multicast/pim/filtering/administrative-scope.md)
       - [Boundary ACLs](network-infrastructure/multicast/pim/filtering/boundary-acls.md)
+      - [IPv6 Multicast Group-Range Filtering](network-infrastructure/multicast/pim/filtering/ipv6-group-range.md)
       - [RP Announcement Filtering](network-infrastructure/multicast/pim/filtering/rp-announcement-filter.md)
       - [Auto-RP Announcement Filtering](network-infrastructure/multicast/pim/filtering/auto-rp-filtering.md)
 

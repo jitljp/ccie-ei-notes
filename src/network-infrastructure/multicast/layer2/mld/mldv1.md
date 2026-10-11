@@ -222,6 +222,9 @@ Enable IPv6 multicast routing globally:
 R1(config)# ipv6 multicast-routing
 ```
 
+Unlike IGMP, in which you must configure `ip multicast-routing` and enable **PIM** on each interface,
+enabling `ipv6 multicast-routing` automatically enables PIM and 
+
 **MLDv2** is the default, but you can enable MLDv1 with:
 
 ```

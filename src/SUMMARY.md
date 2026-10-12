@@ -114,6 +114,8 @@
         - [Candidate RP Announcements](network-infrastructure/multicast/pim/rp-discovery/auto-rp/rp-announcements.md)
         - [Mapping Agent and Discovery Messages](network-infrastructure/multicast/pim/rp-discovery/auto-rp/mapping-agent.md)
         - [Auto-RP Groups and Auto-RP Listener](network-infrastructure/multicast/pim/rp-discovery/auto-rp/groups.md)
+	  - [Command Summary](network-infrastructure/multicast/pim/rp-discovery/commands.md)
+
 
     - [1.6.c (iii) Group-to-RP Mapping](network-infrastructure/multicast/pim/group-to-rp/overview.md)
       - [RP Mapping Database and Group Ranges](network-infrastructure/multicast/pim/group-to-rp/mapping-database.md)

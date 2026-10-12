@@ -357,6 +357,132 @@ As with IPv4, the BSR address must be reachable throughout the relevant PIM doma
 | Default hash mask | 0 bits | 126 bits |
 | BSM destination | `224.0.0.13` | `FF02::D` |
 
+## Filtering Candidate RPs with `accept-rp-candidate`
+
+By default, the elected BSR accepts valid **Candidate-RP-Advertisement (C-RP-Adv) messages** from any Candidate RP.
+
+IOS XE supports the optional **`accept-rp-candidate`** keyword to restrict which Candidate RPs are accepted by the BSR.
+
+This is useful for preventing unauthorized or incorrectly configured routers from advertising themselves as RPs.
+
+The filter is configured as part of the Candidate BSR command. It is not a separate global command.
+
+### IPv4 Standard ACL
+
+For IPv4, the simplest approach is to use a **standard IPv4 ACL** identifying the permitted Candidate RP addresses.
+
+For example, allow only `3.3.3.3` and `4.4.4.4` to become Candidate RPs:
+
+```text
+R1(config)# ip access-list standard ALLOWED-C-RPS
+R1(config-std-nacl)# permit host 3.3.3.3
+R1(config-std-nacl)# permit host 4.4.4.4
+
+R1(config)# ip pim bsr-candidate Loopback0 30 10 accept-rp-candidate ALLOWED-C-RPS
+```
+
+The behavior is:
+
+| Candidate RP | Accepted? |
+|---|---|
+| `3.3.3.3` | Yes |
+| `4.4.4.4` | Yes |
+| `5.5.5.5` | No |
+
+Candidate RP advertisements that do not match a `permit` statement are rejected by the BSR.
+
+The rejected Candidate RPs are not included in the RP-Set distributed by that BSR.
+
+**The ACL identifies allowed Candidate RP addresses, not multicast group addresses.**
+
+### IPv4 Extended ACL
+
+IOS XE also supports **extended IPv4 ACLs** for Candidate RP filtering.
+
+Extended ACLs allow matching PIM protocol traffic and IP source/destination fields.
+
+For example:
+
+```text
+R1(config)# ip access-list extended ALLOWED-C-RPS
+R1(config-ext-nacl)# permit pim host 3.3.3.3 any
+R1(config-ext-nacl)# permit pim host 4.4.4.4 any
+
+R1(config)# ip pim bsr-candidate Loopback0 30 10 accept-rp-candidate ALLOWED-C-RPS
+```
+
+Here, `pim` matches IP protocol 103. `ip` also works.
+
+The source field identifies the permitted Candidate RP advertisement senders, while `any` allows any destination address.
+
+> **Note:** When using an extended ACL, consider that the outer source address of a unicast C-RP advertisement and its advertised RP address are distinct fields. The precise matching behavior should be verified on the target IOS XE platform. A standard ACL matching the intended Candidate RP addresses is generally the simpler configuration.
+
+### IPv6 ACL
+
+For IPv6, the filter is configured using an **IPv6 ACL**.
+
+For example, permit only Candidate RP `2001:DB8:3::3`:
+
+```text
+R1(config)# ipv6 access-list ALLOWED-C-RPS-V6
+R1(config-ipv6-acl)# permit ipv6 host 2001:DB8:3::3 any
+
+R1(config)# ipv6 pim bsr candidate bsr 2001:DB8:1::1 126 priority 10 accept-rp-candidate ALLOWED-C-RPS-V6
+```
+
+The IPv6 ACL uses an extended-style source/destination format.
+
+Cisco documents matching permitted Candidate RP addresses in the **source field** and using `any` for the destination field.
+
+Other Candidate RPs are denied by the implicit deny at the end of the ACL.
+
+### Candidate RP Filtering vs. Group Filtering
+
+It is important to distinguish **filtering which routers can become RPs** from **filtering which multicast groups they advertise**.
+
+| Configuration | Applied On | Purpose |
+|---|---|---|
+| `ip pim bsr-candidate ... accept-rp-candidate` | Candidate BSR | Restricts accepted IPv4 Candidate RPs |
+| `ipv6 pim bsr candidate bsr ... accept-rp-candidate` | Candidate BSR | Restricts accepted IPv6 Candidate RPs |
+| `ip pim rp-candidate ... group-list` | Candidate RP | Restricts advertised IPv4 multicast group ranges |
+| `ipv6 pim bsr candidate rp ... group-list` | Candidate RP | Restricts advertised IPv6 multicast group ranges |
+
+For example, R3 can advertise itself only for `239.1.0.0/16`:
+
+```text
+R3(config)# ip access-list standard RP-GROUPS
+R3(config-std-nacl)# permit 239.1.0.0 0.0.255.255
+
+R3(config)# ip pim rp-candidate Loopback0 group-list RP-GROUPS
+```
+
+Meanwhile, R1 can restrict which Candidate RPs it accepts:
+
+```text
+R1(config)# ip access-list standard ALLOWED-C-RPS
+R1(config-std-nacl)# permit host 3.3.3.3
+
+R1(config)# ip pim bsr-candidate Loopback0 30 10 accept-rp-candidate ALLOWED-C-RPS
+```
+
+The combined result is:
+
+- R3 advertises itself as a Candidate RP for `239.1.0.0/16`.
+- R1 accepts R3's Candidate RP advertisements.
+- Other Candidate RPs are rejected by R1's filter.
+
+**`accept-rp-candidate` filters RP candidacy at the BSR; `group-list` controls which group prefixes a Candidate RP advertises.**
+
+### Filtering and BSR Redundancy
+
+The filtering configuration matters on the **elected BSR**.
+
+If multiple Candidate BSRs are configured for redundancy, they should use consistent Candidate RP acceptance policies.
+
+Otherwise, a BSR failover could change which Candidate RPs are accepted and advertised throughout the domain.
+
+> **Important:** `accept-rp-candidate` does not block PIM Bootstrap Messages, multicast data packets, or source registration. It controls which Candidate RP information the elected BSR accepts. Command availability and ACL handling can vary by IOS XE platform.
+
 ## BSR Election and RPF
 
 Bootstrap Messages use a special hop-by-hop forwarding process.
@@ -439,6 +565,35 @@ R1# show ip pim rp-hash 239.1.1.1
 
 These verify that BSR information has resulted in usable group-to-RP mappings.
 
+### Verify Candidate RP Filtering
+
+On the elected BSR, verify that the filter is configured:
+
+```text
+R1# show running-config | include ip pim bsr-candidate
+R1# show access-lists ALLOWED-C-RPS
+```
+
+Verify learned RP mappings:
+
+```text
+R1# show ip pim rp mapping
+```
+
+Only permitted Candidate RPs should appear among the BSR-learned mappings.
+
+For IPv6:
+
+```text
+R1# show running-config | include ipv6 pim bsr candidate bsr
+R1# show ipv6 access-list ALLOWED-C-RPS-V6
+R1# show ipv6 pim bsr rp-cache
+```
+
+The RP cache is particularly useful because it shows Candidate RP information received by the elected BSR.
+
+Compare the cache with the permitted addresses in the ACL.
+
 ### IPv6 BSR Information
 
 ```text
@@ -492,6 +647,8 @@ The second displays group-to-RP mappings.
 | No BSR learned | Missing PIM neighbors, invalid RPF path, BSM filtering, or BSR border |
 | Two different BSRs appear elected | Partitioned BSM propagation, missing connectivity, or inconsistent BSR boundaries |
 | BSR election succeeds but no RP mappings exist | No Candidate RP advertisements received |
+| Candidate RP missing from the BSR RP-Set | `accept-rp-candidate` ACL denies it, or its advertisements are not reaching the BSR |
+| RP mappings change after BSR failover | Candidate BSRs use inconsistent acceptance policies |
 | BSR election continually changes | Unstable connectivity, intermittent BSM loss, or changing Candidate BSR state |
 | IPv6 BSR not learned | Incorrect BSR address, lack of reachability, or IPv6 PIM/BSM forwarding problem |
 
@@ -503,6 +660,7 @@ A useful troubleshooting sequence is:
 4. Verify that Bootstrap Messages can cross the required interfaces.
 5. Verify the elected BSR on multiple routers.
 6. Verify that Candidate RPs are advertising and their mappings are distributed.
+7. If a Candidate RP is missing, check any `accept-rp-candidate` ACL on the elected BSR.
 
 ## Key Points
 
@@ -519,6 +677,9 @@ A useful troubleshooting sequence is:
 - IOS XE defaults to a BSR priority of **0**, whereas RFC 5059 recommends 64.
 - IPv4 uses `ip pim bsr-candidate`.
 - IPv6 uses `ipv6 pim bsr candidate bsr`.
+- **`accept-rp-candidate` restricts which Candidate RPs the elected BSR accepts.**
+- IPv4 supports **standard and extended ACLs** for Candidate RP filtering; IPv6 uses an **IPv6 ACL**.
+- Candidate RP filtering is distinct from a Candidate RP's `group-list`, which controls advertised multicast group ranges.
 - BSR border interfaces prevent BSMs from crossing between multicast domains.
 
 ## References
@@ -527,3 +688,5 @@ A useful troubleshooting sequence is:
 - [RFC 5059, Section 5: Timers and Timer Values](https://www.rfc-editor.org/rfc/rfc5059.html#section-5)
 - [Cisco IOS XE: Configuring Basic IP Multicast](https://www.cisco.com/c/en/us/td/docs/routers/ios-xe/ip-multicast/ip-multicast/m_imc_basic_cfg-0.html)
 - [Cisco IOS XE: IPv6 Multicast Bootstrap Router](https://www.cisco.com/c/en/us/td/docs/routers/ios-xe/ip-multicast/ip-multicast/m_ip6-mcast-bsr.html)
+- [Cisco IOS XE: `ip pim bsr-candidate` Command Reference](https://www.cisco.com/c/en/us/td/docs/routers/sdwan/command/iosxe/qualified-cli-command-reference-guide/m-ip-commands.html)
+- [Cisco IPv6 Command Reference: `ipv6 pim bsr candidate bsr`](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/ipv6/command/ipv6-cr-book/ipv6-i4.html)

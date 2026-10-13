@@ -128,8 +128,8 @@
 
     - [1.6.c (v) Multicast Boundary, RP Announcement Filter](network-infrastructure/multicast/pim/filtering/overview.md)
       - [Multicast Boundaries and Administrative Scope](network-infrastructure/multicast/pim/filtering/multicast-boundary.md)
-      - [IPv6 Multicast Group-Range Filtering](network-infrastructure/multicast/pim/filtering/ipv6-group-range.md)
-      - [RP Announcement Filtering](network-infrastructure/multicast/pim/filtering/rp-announcement-filter.md)
+      - [Multicast Group-Range Filtering](network-infrastructure/multicast/pim/filtering/group-range.md)
+      - [Auto-RP Announcement Filtering](network-infrastructure/multicast/pim/filtering/rp-announcement-filter.md)
 
     - [1.6.c (vi) PIMv6 Anycast RP](network-infrastructure/multicast/pim/pimv6-anycast-rp/overview.md)
       - [Anycast RP Addressing and Operation](network-infrastructure/multicast/pim/pimv6-anycast-rp/operation.md)

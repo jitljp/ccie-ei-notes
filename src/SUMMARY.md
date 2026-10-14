@@ -130,23 +130,23 @@
       - [Multicast Boundaries and Administrative Scope](network-infrastructure/multicast/pim/filtering/multicast-boundary.md)
       - [Multicast Group-Range Filtering](network-infrastructure/multicast/pim/filtering/group-range.md)
       - [Auto-RP Announcement Filtering](network-infrastructure/multicast/pim/filtering/rp-announcement-filter.md)
+      - [PIM RP Acceptance Filtering](network-infrastructure/multicast/pim/filtering/accept-rp.md)
 
     - [1.6.c (vi) PIMv6 Anycast RP](network-infrastructure/multicast/pim/pimv6-anycast-rp/overview.md)
       - [Anycast RP Addressing and Operation](network-infrastructure/multicast/pim/pimv6-anycast-rp/operation.md)
-      - [Register Forwarding and State Synchronization](network-infrastructure/multicast/pim/pimv6-anycast-rp/register-forwarding.md)
+      - [PIM Register Replication and Source Discovery](network-infrastructure/multicast/pim/pimv6-anycast-rp/register-forwarding.md)
       - [Anycast RP Configuration and Failover](network-infrastructure/multicast/pim/pimv6-anycast-rp/configuration.md)
 
     - [1.6.c (vii) IPv4 Anycast RP Using MSDP](network-infrastructure/multicast/pim/msdp-anycast-rp/overview.md)
-      - [Anycast RP Design and MSDP Overview](network-infrastructure/multicast/pim/msdp-anycast-rp/msdp-overview.md)
-      - [MSDP Peering](network-infrastructure/multicast/pim/msdp-anycast-rp/peering.md)
+      - [Anycast RP Addressing and MSDP Operation](network-infrastructure/multicast/pim/msdp-anycast-rp/msdp-overview.md)
+      - [MSDP Peering and Originator ID](network-infrastructure/multicast/pim/msdp-anycast-rp/peering.md)
       - [Source-Active Messages and SA Cache](network-infrastructure/multicast/pim/msdp-anycast-rp/sa-messages.md)
-      - [MSDP Peer-RPF](network-infrastructure/multicast/pim/msdp-anycast-rp/peer-rpf.md)
-      - [Anycast RP Synchronization, Configuration, and Failover](network-infrastructure/multicast/pim/msdp-anycast-rp/configuration.md)
+      - [MSDP Peer-RPF and Mesh Groups](network-infrastructure/multicast/pim/msdp-anycast-rp/peer-rpf.md)
 
     - [1.6.c (viii) Multicast Multipath](network-infrastructure/multicast/pim/multipath/overview.md)
       - [ECMP and Multicast Load Splitting](network-infrastructure/multicast/pim/multipath/ecmp-rpf.md)
-      - [Source-Based and Source-Group Hashing](network-infrastructure/multicast/pim/multipath/source-hash.md)
-      - [Next-Hop-Based Source-Group Hashing](network-infrastructure/multicast/pim/multipath/next-hop-hash.md)
+      - [S-Hash and Basic S-G Hashing](network-infrastructure/multicast/pim/multipath/source-hash.md)
+      - [Next-Hop-Based S-G Hashing](network-infrastructure/multicast/pim/multipath/next-hop-hash.md)
 
 # 2.0 Software-Defined Infrastructure
 

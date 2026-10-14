@@ -211,5 +211,32 @@
 
 # 4.0 Infrastructure Security and Services
 
+- [4.1 Device Security on Cisco IOS XE](infrastructure-security-and-services/device-security/overview.md)
+
+  - [4.1.a Control Plane Policing and Protection](infrastructure-security-and-services/device-security/control-plane/overview.md)
+    - [Control-Plane Traffic and Packet Punt Paths](infrastructure-security-and-services/device-security/control-plane/traffic-paths.md)
+    - [CoPP Traffic Classification](infrastructure-security-and-services/device-security/control-plane/classification.md)
+    - [CoPP Policing Rates and Actions](infrastructure-security-and-services/device-security/control-plane/policing.md)
+    - [CoPP Configuration](infrastructure-security-and-services/device-security/control-plane/copp-configuration.md)
+    - [Control Plane Protection and Subinterfaces](infrastructure-security-and-services/device-security/control-plane/cppr.md)
+    - [CPPr Port Filtering and Queue Thresholding](infrastructure-security-and-services/device-security/control-plane/port-filtering.md)
+    - [Management Plane Protection](infrastructure-security-and-services/device-security/control-plane/mpp.md)
+    - [Catalyst 9000 System CoPP](infrastructure-security-and-services/device-security/control-plane/system-copp.md)
+    - [CoPP and CPPr Verification and Troubleshooting](infrastructure-security-and-services/device-security/control-plane/troubleshooting.md)
+
+  - [4.1.b AAA](infrastructure-security-and-services/device-security/aaa/overview.md)
+    - [AAA Method Lists and Processing](infrastructure-security-and-services/device-security/aaa/method-lists.md)
+    - [Local Users and Privilege Levels](infrastructure-security-and-services/device-security/aaa/local-users.md)
+    - [TACACS+](infrastructure-security-and-services/device-security/aaa/tacacs.md)
+    - [RADIUS](infrastructure-security-and-services/device-security/aaa/radius.md)
+    - [AAA Server Groups and VRF-Aware Configuration](infrastructure-security-and-services/device-security/aaa/server-groups.md)
+    - [Login and Enable Authentication](infrastructure-security-and-services/device-security/aaa/authentication.md)
+    - [EXEC Authorization](infrastructure-security-and-services/device-security/aaa/exec-authorization.md)
+    - [Command Authorization](infrastructure-security-and-services/device-security/aaa/command-authorization.md)
+    - [AAA Accounting](infrastructure-security-and-services/device-security/aaa/accounting.md)
+    - [AAA Server Failover and Local Fallback](infrastructure-security-and-services/device-security/aaa/failover.md)
+    - [Complete AAA Configuration](infrastructure-security-and-services/device-security/aaa/configuration.md)
+    - [AAA Verification and Troubleshooting](infrastructure-security-and-services/device-security/aaa/troubleshooting.md)
+
 
 # 5.0 Infrastructure Automation and Programmability

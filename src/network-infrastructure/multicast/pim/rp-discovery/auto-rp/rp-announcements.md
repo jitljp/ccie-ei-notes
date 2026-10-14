@@ -45,7 +45,6 @@ For example:
 
 ```text
 R3 RP-Announce:
-
 RP Address:  3.3.3.3
 Group Range: 239.0.0.0/8
 Holdtime:    180 seconds
@@ -53,7 +52,6 @@ Holdtime:    180 seconds
 
 ```text
 R4 RP-Announce:
-
 RP Address:  4.4.4.4
 Group Range: 239.0.0.0/8
 Holdtime:    180 seconds
@@ -88,7 +86,6 @@ For example:
 
 ```text
 RP-Discovery:
-
 Group Range: 239.0.0.0/8
 RP Address:  4.4.4.4
 ```
@@ -116,7 +113,7 @@ Auto-RP uses multicast UDP packets rather than PIM control messages.
 Each RP-Announce message conveys:
 
 - **Candidate RP address:** The address advertised as the RP.
-- **Multicast group ranges:** Groups for which the router is willing to serve as RP.
+- **Multicast group ranges:** Positive mappings identify groups the router offers to serve as RP; explicitly denied ranges can be carried as negative mappings.
 - **Holdtime:** How long the Mapping Agent considers the announcement valid.
 - **PIM mode:** Whether the group mapping is for ordinary PIM-SM or Bidirectional PIM.
 
@@ -141,18 +138,18 @@ A single Candidate RP can advertise multiple multicast group ranges.
 Configure a Candidate RP using:
 
 ```text
-ip pim send-rp-announce {<interface> | <ipv4-address>} scope <ttl> [group-list <acl>] [interval <seconds>] [bidir]
+ip pim send-rp-announce {\<interface> | \<ipv4-address>} scope \<ttl> [group-list \<acl>] [interval \<seconds>] [bidir]
 ```
 
 The command is entered in global configuration mode.
 
 | Parameter | Description |
 |---|---|
-| `<interface>` | Interface whose IPv4 address is advertised as the RP |
-| `<ipv4-address>` | Local IPv4 address to advertise as the RP |
-| `scope <ttl>` | TTL of the RP-Announce messages |
-| `group-list <acl>` | Standard IPv4 ACL identifying advertised multicast group ranges |
-| `interval <seconds>` | Period between RP-Announce messages |
+| `\<interface>` | Interface whose IPv4 address is advertised as the RP |
+| `\<ipv4-address>` | Local IPv4 address to advertise as the RP |
+| `scope \<ttl>` | TTL of the RP-Announce messages |
+| `group-list \<acl>` | Standard IPv4 ACL identifying advertised multicast group ranges |
+| `interval \<seconds>` | Period between RP-Announce messages |
 | `bidir` | Advertises the specified groups for Bidirectional PIM |
 
 ### Basic Candidate RP
@@ -161,14 +158,11 @@ On R3:
 
 ```text
 R3(config)# ip multicast-routing
-
 R3(config)# interface Loopback0
 R3(config-if)# ip address 3.3.3.3 255.255.255.255
 R3(config-if)# ip pim sparse-mode
-
 R3(config)# interface Ethernet0/0
 R3(config-if)# ip pim sparse-mode
-
 R3(config)# ip pim send-rp-announce Loopback0 scope 16
 ```
 
@@ -216,16 +210,17 @@ The RP address must also be reachable by the PIM routers that learn the mapping.
 
 ## Restrict Advertised Multicast Groups
 
-The `group-list` keyword controls which multicast groups the Candidate RP advertises itself for.
+The `group-list` keyword controls the group-range information advertised by a Candidate RP.
 
-It uses a **standard IPv4 ACL**.
+It uses a **standard IPv4 ACL**. **`permit` entries advertise positive RP mappings, while explicit `deny` entries advertise negative mappings.** Negative announcements indicate that the matching groups should not use an Auto-RP RP and should instead operate in Dense Mode, provided Dense Mode forwarding is enabled.
+
+> The **implicit deny** does not generate a negative announcement. Only explicitly configured `deny` entries do.
 
 For example, configure R3 as a Candidate RP only for `239.1.0.0/16`:
 
 ```text
 R3(config)# ip access-list standard RP-GROUPS
 R3(config-std-nacl)# permit 239.1.0.0 0.0.255.255
-
 R3(config)# ip pim send-rp-announce Loopback0 scope 16 group-list RP-GROUPS
 ```
 
@@ -249,7 +244,6 @@ R3(config)# ip access-list standard RP-GROUPS
 R3(config-std-nacl)# permit 239.1.0.0 0.0.255.255
 R3(config-std-nacl)# permit 239.2.0.0 0.0.255.255
 R3(config-std-nacl)# permit 239.3.3.0 0.0.0.255
-
 R3(config)# ip pim send-rp-announce Loopback0 scope 16 group-list RP-GROUPS
 ```
 
@@ -262,6 +256,74 @@ R3 advertises itself for:
 This allows one RP to serve several noncontiguous multicast group ranges.
 
 The Mapping Agent can then select R3 for these groups based on the advertisements it receives from all Candidate RPs.
+
+### Positive and Negative Group Announcements
+
+Unlike an ordinary packet-filtering ACL, the `group-list` used by `ip pim send-rp-announce` can advertise **both positive and negative group prefixes**.
+
+| ACL Entry | Auto-RP Meaning |
+|---|---|
+| `permit <group-range>` | **Positive announcement:** The Candidate RP offers to serve as RP for this range. |
+| `deny <group-range>` | **Negative announcement:** The group range is marked as having no RP and is considered a Dense Mode group. |
+
+For example, on R3:
+
+```text
+R3(config)# ip access-list standard RP-GROUPS
+R3(config-std-nacl)# deny 239.1.0.0 0.0.255.255
+R3(config-std-nacl)# permit 239.0.0.0 0.255.255.255
+
+R3(config)# ip pim send-rp-announce Loopback0 scope 16 group-list RP-GROUPS
+```
+
+R3 advertises the following information:
+
+| Group Range | Announcement | Meaning |
+|---|---|---|
+| `239.0.0.0/8` | Positive | R3 (`3.3.3.3`) is a Candidate RP for the range. |
+| `239.1.0.0/16` | Negative | Do not use an Auto-RP RP for groups in this range. |
+
+The Mapping Agent collects these announcements and includes the positive and negative mappings in RP-Discovery messages. **A negative announcement can affect every router learning that mapping, regardless of which Candidate RP advertised it.**
+
+> **Important:** An explicit `deny` creates a negative group announcement. The ACL's *implicit deny* does **not** advertise a negative entry covering everything else. Otherwise, an ordinary `group-list` containing only `permit` entries would unintentionally make all other multicast groups negative.
+
+#### Negative Mappings Take Precedence
+
+A router receiving Auto-RP mappings processes them in this order:
+
+1. **Check negative mappings first.** If the group matches a negative entry, do not select an Auto-RP RP for it.
+2. **Check positive mappings only if no negative mapping matched.** If several positive mappings cover the group, select the one with the longest matching prefix.
+
+For example, assume the router learns:
+
+| Type | Group Range | Advertised RP |
+|---|---|---|
+| Positive | `239.0.0.0/8` | `3.3.3.3` |
+| Positive | `239.1.1.0/24` | `4.4.4.4` |
+| Negative | `239.1.0.0/16` | RP field ignored |
+
+For group `239.1.1.1`, the **negative `/16` wins even over the more-specific positive `/24`**, because negative mappings are evaluated before positive longest-prefix matching.
+
+This also means that an explicit `deny any` in an advertised Candidate RP group list can mark the entire group space as negative, overriding positive Auto-RP mappings distributed in the same domain.
+
+**Do not confuse a negative announcement with a mapping-agent filter.** A negative announcement distributes a *no-RP* designation to other routers; `ip pim rp-announce-filter` controls which received announcements the Mapping Agent accepts.
+
+#### Effect on Multicast Forwarding
+
+A negative mapping indicates **no RP should be used for that group**. However, it does **not** automatically enable Dense Mode forwarding on an interface configured for PIM Sparse Mode.
+
+- With `ip pim sparse-dense-mode`, the group can use Dense Mode fallback, subject to the router's fallback configuration.
+- With `ip pim sparse-mode`, multicast traffic for that no-RP group is not automatically flooded in Dense Mode.
+- `ip pim autorp listener` enables Dense Mode handling only for the Auto-RP transport groups (`224.0.1.39` and `224.0.1.40`), **not** for other negatively advertised groups.
+- `no ip pim dm-fallback` is relevant when preventing unwanted Dense Mode fallback on sparse-dense interfaces.
+
+Therefore, **a negative Auto-RP mapping is not a data-plane drop ACL**. Its actual forwarding effect depends on the PIM configuration.
+
+#### Group Ranges Must Use Contiguous Masks
+
+Auto-RP advertises group ranges as **prefixes and prefix lengths**. IOS XE converts standard ACL wildcard masks into prefix lengths when building advertisements.
+
+Use *contiguous* wildcard masks such as `0.0.0.255` (`/24`) or `0.0.255.255` (`/16`). **Discontinuous wildcard masks cannot be represented as a single Auto-RP group prefix and should not be used.**
 
 ### Candidate RP Group List vs. Mapping Agent Filtering
 
@@ -397,7 +459,6 @@ Use the `bidir` keyword:
 ```text
 R3(config)# ip access-list standard BIDIR-GROUPS
 R3(config-std-nacl)# permit 239.10.0.0 0.0.255.255
-
 R3(config)# ip pim send-rp-announce Loopback0 scope 16 group-list BIDIR-GROUPS bidir
 ```
 
@@ -458,7 +519,7 @@ If a group list is configured:
 R3# show access-lists RP-GROUPS
 ```
 
-Verify that the expected multicast group prefixes are permitted.
+Verify that the intended **positive (`permit`) and negative (`deny`) group prefixes** are present. In particular, inspect explicit `deny` statements rather than assuming they are ordinary filter exclusions.
 
 ### Auto-RP Status and Statistics
 
@@ -473,7 +534,6 @@ For example:
 ```text
 AutoRP Information:
   AutoRP is enabled.
-
 PIM AutoRP Statistics: Sent/Received
   RP Announce: 5/0, RP Discovery: 0/4
 ```
@@ -492,11 +552,35 @@ Check the RP-Announce received counter.
 
 The Mapping Agent must receive the Candidate RP advertisements before it can build and distribute RP mappings.
 
-Verify learned mappings:
+Verify learned mappings, including negative entries:
 
 ```text
 R2# show ip pim rp mapping
 ```
+
+A negative entry can appear with a **`(-)` prefix**. For example, the following is an illustrative excerpt from a receiving router:
+
+```text
+Group(s) 239.0.0.0/8
+  RP 3.3.3.3 (?), v2v1
+    Info source: 2.2.2.2 (?), elected via Auto-RP
+
+Group(s) (-)239.1.0.0/16
+  RP 3.3.3.3 (?), v2v1
+    Info source: 2.2.2.2 (?), elected via Auto-RP
+```
+
+The RP address displayed with a **negative entry** does **not** mean that router is selected as the RP for the denied group range. It identifies an address associated with the negative mapping information.
+
+To check a specific group and its forwarding state:
+
+```text
+R2# show ip pim rp 239.1.1.1
+R2# show ip mroute 239.1.1.1
+R2# show ip pim interface
+```
+
+Check for a matching negative mapping and verify whether the interfaces support Dense Mode forwarding.
 
 ### Debug Auto-RP Announcements
 
@@ -544,7 +628,10 @@ Verify that the Auto-RP announcement group is being forwarded through the expect
 | Candidate RP sends no announcements | Missing `ip pim send-rp-announce` configuration or multicast routing not operational |
 | Mapping Agent receives no announcements | `224.0.1.39` not forwarded, TTL too low, or multicast boundary |
 | Incorrect Candidate RP address | Wrong interface or IPv4 address specified |
-| Expected group missing | Incorrect `group-list` ACL |
+| Expected positive group missing | Incorrect `group-list` ACL or negative mapping overriding the positive mapping |
+| Group unexpectedly has no RP | An explicit `deny` in any Candidate RP group list generated a negative Auto-RP mapping |
+| Group marked negative but not forwarded | Only `ip pim sparse-mode` is configured, or Dense Mode fallback is disabled |
+| Unexpected Dense Mode flooding | A negative mapping combined with `ip pim sparse-dense-mode` and fallback enabled |
 | Candidate RP is rejected | Mapping Agent `rp-announce-filter` policy |
 | Candidate RP repeatedly expires | RP-Announce messages are not reaching the Mapping Agent consistently |
 | Wrong RP selected | Another Candidate RP advertises the same group range with a higher IP address |
@@ -567,7 +654,11 @@ A useful troubleshooting sequence is:
 - `ip pim send-rp-announce` configures an IPv4 Auto-RP Candidate RP.
 - The configured interface or IPv4 address identifies the **advertised RP address**, not a single outgoing announcement interface.
 - `scope` sets the IPv4 TTL, ranging from **1 to 255**.
-- `group-list` uses a **standard IPv4 ACL** to restrict advertised multicast group ranges.
+- `group-list` uses a **standard IPv4 ACL** to advertise multicast group prefixes.
+- **Explicit `permit` entries create positive Auto-RP group announcements; explicit `deny` entries create negative announcements.** The implicit deny does not advertise a blanket negative mapping.
+- **Negative Auto-RP mappings are checked before positive mappings**, regardless of prefix length; positive mappings use longest-prefix matching only if no negative entry matches.
+- Negative mappings designate groups as having **no Auto-RP RP**, but Dense Mode forwarding still depends on the PIM interface mode and fallback configuration.
+- Auto-RP encodes group ranges as prefix lengths; **do not use discontinuous wildcard masks** in a Candidate RP `group-list`.
 - Without `group-list`, the Candidate RP advertises itself for `224.0.0.0/4`.
 - The default RP-Announce interval is **60 seconds**.
 - The Holdtime is **three times the advertisement interval**, giving a default of **180 seconds**.
@@ -583,3 +674,4 @@ A useful troubleshooting sequence is:
 - [Cisco IOS XE: IP Multicast Routing Command Reference](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9600/software/release/17-13/command_reference/b_1713_9600_cr/ip_multicast_routing_commands.html)
 - [Cisco: Review the IP Multicast Quick-Start Configuration Guide](https://www.cisco.com/c/en/us/support/docs/ip/ip-multicast/9356-48.html)
 - [Cisco: Debug IP PIM Auto-RP](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/debug/command/i1/db-i1-cr-book/db-i2.html)
+- [Cisco Community: Negative Auto-RP Group Mappings](https://community.cisco.com/t5/switching/block-multicast-group-rp/td-p/2062429)

@@ -20,7 +20,8 @@ The following table summarizes the primary IPv4 RP selection rules on Cisco IOS 
 | Multiple static mappings match G | Highest RP IPv4 address |
 | BSR Candidate RPs match G | Longest group prefix, lowest priority, highest hash, highest RP address |
 | Multiple Auto-RP candidates advertise the same range | Mapping Agent selects the highest RP IPv4 address |
-| Multiple Auto-RP group ranges match G | Longest matching group prefix |
+| Multiple positive Auto-RP group ranges match G | Longest matching group prefix, provided no negative mapping matches |
+| Negative Auto-RP mapping matches G | No Auto-RP RP is selected; negative mappings take precedence over all positive mappings |
 | Static and dynamic mappings both match G | Dynamic mapping wins unless static `override` is configured |
 
 **Do not confuse selection among Candidate RPs with the final lookup of the RP for a multicast group.**
@@ -82,7 +83,7 @@ The resulting mappings are:
 
 The Mapping Agent advertises these selected mappings in RP-Discovery messages sent to `224.0.1.40`.
 
-**Stage 1 selects one RP for each advertised group range. It does not mean that every multicast group covered by a range must use that RP when a more specific mapping also exists.**
+**Stage 1 selects one RP for each advertised group range. It does not mean that every multicast group covered by a range must use that RP when a more specific positive mapping also exists. Negative Auto-RP mappings are a separate exception, discussed below.**
 
 ### Stage 2: Selecting the Effective RP for G
 
@@ -103,7 +104,7 @@ Both mappings match:
 | `239.0.0.0/8` | `3.3.3.3` | Yes |
 | `239.1.0.0/16` | `2.2.2.2` | Yes |
 
-The router uses **longest-prefix matching**, selecting the more specific `/16` mapping.
+Because both entries are **positive mappings** and no negative mapping matches, the router uses **longest-prefix matching**, selecting the more specific `/16` mapping.
 
 Therefore:
 
@@ -119,9 +120,100 @@ The highest-address rule was applied during Stage 1 to choose between Candidate 
 
 It does not override longest-prefix matching during the final lookup.
 
+### Negative Auto-RP Mappings: Negative Before Positive
+
+An Auto-RP Candidate RP can advertise both **positive** and **negative** group ranges through the standard IPv4 ACL referenced by `ip pim send-rp-announce ... group-list`:
+
+- An explicit `permit` entry generates a **positive group announcement**, identifying a group range for which the Candidate RP is available.
+- An explicit `deny` entry generates a **negative group announcement**, identifying a group range that should not use an Auto-RP RP.
+- The **implicit deny** at the end of the ACL does **not** generate a negative announcement.
+
+The Mapping Agent distributes learned negative mappings along with positive RP mappings. On receiving PIM routers, **negative Auto-RP mappings are checked before positive mappings**, regardless of prefix length or which Candidate RP advertised them.
+
+For a particular group G, the Auto-RP lookup is:
+
+1. Check the **negative mappings**. If any negative range matches G, **no Auto-RP RP is selected**.
+2. If no negative range matches G, check the **positive mappings** and select the **longest matching prefix**.
+
+**A negative `/8` mapping therefore takes precedence over a positive `/24` mapping**, even though `/24` is more specific. Longest-prefix matching applies only after the negative check succeeds (that is, no negative entry matches).
+
+#### Example: Negative Mapping Overrides Multiple Positive Mappings
+
+Suppose R1 and R2 advertise the following ranges. The examples use standard IPv4 ACL syntax, with contiguous wildcard masks:
+
+**R1: Candidate RP `1.1.1.1`**
+
+```text
+R1(config)# ip access-list standard RP-GROUPS
+R1(config-std-nacl)# permit 239.1.0.0 0.0.255.255
+R1(config-std-nacl)# deny 239.0.0.0 0.255.255.255
+R1(config)# ip pim send-rp-announce Loopback0 scope 16 group-list RP-GROUPS
+```
+
+**R2: Candidate RP `2.2.2.2`**
+
+```text
+R2(config)# ip access-list standard RP-GROUPS
+R2(config-std-nacl)# permit 239.1.1.0 0.0.0.255
+R2(config)# ip pim send-rp-announce Loopback0 scope 16 group-list RP-GROUPS
+```
+
+Assume the Mapping Agent distributes all three entries and the receiving router learns:
+
+| Group Range | Type | Advertised By |
+|---|---|---|
+| `239.1.0.0/16` | Positive | `1.1.1.1` |
+| `239.1.1.0/24` | Positive | `2.2.2.2` |
+| `239.0.0.0/8` | **Negative** | `1.1.1.1` |
+
+For group `239.1.1.1`, **all three mappings match**. Although R2's positive `/24` mapping is the most specific, the negative `/8` mapping takes precedence:
+
+```text
+Group:       239.1.1.1
+Selected RP: None (negative Auto-RP mapping matches)
+```
+
+The result does **not** depend on whether the negative mapping and the positive mapping came from the same Candidate RP or different Candidate RPs.
+
+Now consider `239.2.2.2`. It matches the negative `/8` but neither positive mapping, so no Auto-RP RP is selected for that group either.
+
+#### Negative Mapping Does Not Automatically Enable Dense Mode
+
+A negative mapping indicates that the matching group **has no Auto-RP RP** and is designated for Dense Mode operation. However, it does **not** by itself change the PIM mode configured on an interface.
+
+- With `ip pim sparse-dense-mode`, the group can use Dense Mode forwarding when no RP is available, subject to the Dense Mode fallback configuration.
+- With `ip pim sparse-mode`, a negative mapping does **not** automatically enable Dense Mode forwarding.
+
+This is separate from `ip pim autorp listener`, which enables Dense Mode forwarding specifically for the Auto-RP control groups `224.0.1.39` and `224.0.1.40`.
+
+#### IOS XE Verification of Negative Mappings
+
+Use:
+
+```text
+R1# show ip pim rp mapping
+```
+
+A negative range is marked with **`(-)`** beside the group prefix. For example, this abbreviated output illustrates the notation:
+
+```text
+Group(s) 239.1.1.0/24
+  RP 2.2.2.2 (?), v2v1
+    Info source: 2.2.2.2 (?), elected via Auto-RP
+Group(s) (-)239.0.0.0/8
+  RP 1.1.1.1 (?), v2v1
+    Info source: 1.1.1.1 (?), elected via Auto-RP
+```
+
+**`(-)` means a negative group mapping**, not a lower-priority RP. Although an RP address still appears in the entry, that address identifies the advertising Candidate RP; it is **not** the RP selected for groups covered by the negative mapping.
+
+> **Important:** This negative-before-positive rule describes lookup within **Auto-RP-learned mappings**. Selection between static and dynamic configurations follows the separate precedence rules later in this page.
+
+See [Candidate RP Announcements](../rp-discovery/auto-rp/rp-announcements.md) for `group-list` configuration and more detail about positive and negative announcements.
+
 ### Additional Group Lookup Examples
 
-Using the same mapping database:
+Assuming the same **positive-only** mapping database (no matching negative entries):
 
 | Group Range | Selected RP |
 |---|---|
@@ -239,7 +331,7 @@ The algorithm is covered in detail in [BSR Hashing](../rp-discovery/bsr/hashing.
 |---|---|---|
 | Information distributed | Candidate RP set | Selected RP mappings |
 | Where Candidate RP selection occurs | Each PIM router | Mapping Agent |
-| Overlapping group ranges | Longest prefix match | Longest prefix match during group lookup |
+| Overlapping group ranges | Longest prefix match | Negative mappings first; otherwise longest matching positive prefix |
 | RP priority | Used | Not used for IOS XE Auto-RP selection |
 | RP hashing | Used when needed | Not used |
 | Highest RP address | Final hash tie-breaker | Selects among candidates for the same advertised range |
@@ -259,10 +351,8 @@ For example:
 ```text
 R1(config)# ip access-list standard RP1-GROUPS
 R1(config-std-nacl)# permit 239.1.0.0 0.0.255.255
-
 R1(config)# ip access-list standard RP2-GROUPS
 R1(config-std-nacl)# permit 239.2.0.0 0.0.255.255
-
 R1(config)# ip pim rp-address 1.1.1.1 RP1-GROUPS
 R1(config)# ip pim rp-address 2.2.2.2 RP2-GROUPS
 ```
@@ -381,7 +471,6 @@ The `override` keyword can also be used with a group ACL.
 ```text
 R1(config)# ip access-list standard STATIC-GROUPS
 R1(config-std-nacl)# permit 239.1.0.0 0.0.255.255
-
 R1(config)# ip pim rp-address 1.1.1.1 STATIC-GROUPS override
 ```
 
@@ -526,7 +615,7 @@ This displays the router's known Group-to-RP mappings.
 
 Check:
 
-- Multicast group ranges
+- Multicast group ranges, including **negative entries marked `(-)`**
 - Candidate or selected RP addresses
 - Mapping information sources
 - RP priorities, where applicable
@@ -658,7 +747,8 @@ A valid RP mapping does not guarantee that the router can reach the RP.
 | Dynamic RP ignored | Static mapping uses `override` |
 | Unexpected BSR RP selected | More specific group range, RP priority, or hash calculation |
 | Unexpected Auto-RP mapping advertised | Another Candidate RP advertises the same range with a higher address |
-| Unexpected RP selected from Auto-RP mappings | Another learned group range is more specific |
+| Unexpected RP selected from Auto-RP mappings | Another **positive** learned group range is more specific |
+| No Auto-RP RP selected despite positive mappings | A matching **negative Auto-RP mapping** takes precedence, even over more-specific positive mappings |
 | Different routers use different RPs | Inconsistent static mappings, RP-Sets, or Auto-RP discovery information |
 | RP mapping changes unexpectedly | Advertisement expiration or withdrawal |
 | Correct RP selected, but multicast fails | RPF failure, RP reachability, or PIM forwarding issue |
@@ -669,7 +759,9 @@ When troubleshooting, first distinguish whether the problem involves **candidate
 
 - RP selection involves two distinct concepts: selecting an RP for a group range and determining the effective RP for a particular group G.
 - **Auto-RP:** The Mapping Agent selects the highest RP IPv4 address when multiple candidates advertise the same group range.
-- **Auto-RP:** Receiving routers use the most specific matching learned group range when determining the effective RP for G.
+- **Auto-RP:** Receiving routers check **negative group mappings first**; if any matches G, no Auto-RP RP is selected. Otherwise, the most specific matching positive mapping wins.
+- **Auto-RP:** Explicit `deny` entries in a Candidate RP `group-list` generate negative announcements; the implicit deny does not.
+- **Auto-RP:** A negative mapping is shown with `(-)` in `show ip pim rp mapping`. It does not by itself enable Dense Mode forwarding on an interface configured with `ip pim sparse-mode`.
 - **BSR:** Each router independently selects the RP using longest prefix, lowest priority, highest hash, and highest RP address.
 - **Static RP:** If multiple static IPv4 mappings match G, the highest RP address wins, even when another mapping is more specific.
 - **Static vs. dynamic:** Dynamic mappings take precedence by default on IOS XE.

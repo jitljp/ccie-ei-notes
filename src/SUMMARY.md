@@ -119,6 +119,7 @@
     - [1.6.c (iii) Group-to-RP Mapping](network-infrastructure/multicast/pim/group-to-rp/overview.md)
       - [RP Mapping Database and Group Ranges](network-infrastructure/multicast/pim/group-to-rp/mapping-database.md)
       - [RP Mapping Selection and Precedence](network-infrastructure/multicast/pim/group-to-rp/selection-precedence.md)
+      - [IPv6 Embedded RP](network-infrastructure/multicast/pim/group-to-rp/ipv6-embedded-rp.md)
 
     - [1.6.c (iv) Source-Specific Multicast](network-infrastructure/multicast/pim/ssm/overview.md)
       - [ASM vs SSM and SSM Address Ranges](network-infrastructure/multicast/pim/ssm/asm-vs-ssm.md)
@@ -222,7 +223,6 @@
     - [CPPr Port Filtering and Queue Thresholding](infrastructure-security-and-services/device-security/control-plane/port-filtering.md)
     - [Management Plane Protection](infrastructure-security-and-services/device-security/control-plane/mpp.md)
     - [Catalyst 9000 System CoPP](infrastructure-security-and-services/device-security/control-plane/system-copp.md)
-    - [CoPP and CPPr Verification and Troubleshooting](infrastructure-security-and-services/device-security/control-plane/troubleshooting.md)
 
   - [4.1.b AAA](infrastructure-security-and-services/device-security/aaa/overview.md)
     - [AAA Method Lists and Processing](infrastructure-security-and-services/device-security/aaa/method-lists.md)
@@ -236,7 +236,5 @@
     - [AAA Accounting](infrastructure-security-and-services/device-security/aaa/accounting.md)
     - [AAA Server Failover and Local Fallback](infrastructure-security-and-services/device-security/aaa/failover.md)
     - [Complete AAA Configuration](infrastructure-security-and-services/device-security/aaa/configuration.md)
-    - [AAA Verification and Troubleshooting](infrastructure-security-and-services/device-security/aaa/troubleshooting.md)
-
 
 # 5.0 Infrastructure Automation and Programmability

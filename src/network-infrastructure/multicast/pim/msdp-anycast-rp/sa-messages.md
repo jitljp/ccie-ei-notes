@@ -1,5 +1,4 @@
 # Source-Active Messages and SA Cache
-
 **Source-Active (SA) messages** are the primary mechanism used by Multicast Source Discovery Protocol (MSDP) to advertise active multicast sources between Rendezvous Points (RPs).
 
 In an IPv4 Anycast RP deployment, SA messages allow one RP to learn about sources that have registered with another RP.
@@ -15,7 +14,6 @@ The receiving RP stores this information in its **SA cache** and can use it to e
 **MSDP provides source discovery, while PIM builds the multicast forwarding tree.**
 
 ## SA Message Origination
-
 An RP running MSDP normally originates SA messages for **locally registered multicast sources**.
 
 A locally registered source is one that the RP has learned about through the PIM source registration process, rather than through an SA message received from another MSDP peer.
@@ -37,7 +35,6 @@ Assume the following addresses:
 | RP2 MSDP address | `10.0.0.2` |
 
 ### Step 1: Source Registers with RP1
-
 Src begins sending multicast traffic to `239.1.1.1`.
 
 R1 receives the traffic and sends PIM Register messages to the Anycast RP address:
@@ -55,14 +52,12 @@ RP1 learns the active source:
 ```
 
 ### Step 2: RP1 Originates an SA Message
-
 Because the source has registered locally, RP1 originates an MSDP SA message advertising the source.
 
 For example:
 
 ```text
 MSDP SA Message
-
 Originating RP: 10.0.0.1
 Source (S):     192.0.2.10
 Group (G):      239.1.1.1
@@ -78,13 +73,16 @@ RP1 --------------------------> RP2
 The SA message uses RP1's **unique Originator ID**, `10.0.0.1`, not the shared Anycast RP address, `10.0.0.100`.
 
 ### Step 3: RP2 Processes the SA Message
-
 When RP2 receives the SA message, it:
 
 1. Performs the MSDP Peer-RPF check.
+
 2. Applies any configured incoming SA filters.
+
 3. Accepts the advertised source information if the checks succeed.
+
 4. Stores the information in its SA cache.
+
 5. Determines whether it has downstream interest in the advertised multicast group.
 
 If RP2 has interested receivers for `239.1.1.1`, it can initiate a PIM `(S,G)` Join toward `192.0.2.10`.
@@ -94,7 +92,6 @@ If there are no interested receivers, RP2 retains the source information in its 
 > **Important:** Receiving an SA message does not automatically create multicast forwarding state or cause the receiving RP to send a PIM Join. A source tree is built when there is downstream interest in the group.
 
 ## SA Message Format
-
 MSDP messages use a **Type-Length-Value (TLV)** format.
 
 An IPv4 Source-Active message uses **MSDP TLV Type 1**.
@@ -142,7 +139,6 @@ For example:
 ```text
 RP Address: 10.0.0.1
 Entry Count: 3
-
 (S,G):
   (192.0.2.10, 239.1.1.1)
   (192.0.2.10, 239.1.1.2)
@@ -152,7 +148,6 @@ Entry Count: 3
 This allows an RP to advertise multiple active sources efficiently.
 
 ### RP Address Field
-
 In an Anycast RP deployment, the RP Address field must identify the physical RP that originated the SA.
 
 For example:
@@ -174,7 +169,6 @@ RP2(config)# ip msdp originator-id Loopback1
 See [MSDP Peering and Originator ID](peering.md).
 
 ## SA Advertisement Interval
-
 An originating RP periodically refreshes its advertisements while the corresponding multicast sources remain active.
 
 RFC 3618 defines an **SA Advertisement Period of 60 seconds**.
@@ -187,13 +181,10 @@ For example:
 Time 0:
   Source becomes active.
   RP1 originates an SA.
-
 Time 60:
   RP1 periodically advertises the source.
-
 Time 120:
   RP1 periodically advertises the source.
-
 Time 180:
   RP1 periodically advertises the source.
 ```
@@ -209,7 +200,6 @@ The receiving RP eventually removes the corresponding SA cache entry if it no lo
 **The 60-second SA Advertisement Period is separate from the MSDP TCP Keepalive Interval**, even though both have a default value of 60 seconds.
 
 ## SA Messages with Encapsulated Multicast Data
-
 An SA message can optionally contain an encapsulated multicast data packet.
 
 This is primarily useful when a source first becomes active.
@@ -231,7 +221,6 @@ However, this encapsulation is optional.
 Once the native `(S,G)` tree is established, multicast traffic flows using normal PIM forwarding.
 
 ### Initial vs. Periodic SA Messages
-
 | SA Message | Encapsulated Data |
 |---|---|
 | Initial SA for a newly active source | May contain a multicast packet |
@@ -241,8 +230,40 @@ Once the native `(S,G)` tree is established, multicast traffic flows using norma
 
 Its primary function is source discovery, not multicast data transport.
 
-## SA Message Propagation
+### MSDP TTL Threshold
 
+The `ip msdp ttl-threshold` command controls whether a multicast data packet can be **encapsulated in an SA message sent to a specific MSDP peer**.
+
+This is useful because the original multicast packet's TTL is not decremented while it travels inside the unicast MSDP SA message. Without a threshold, traffic intended to remain within a limited scope could reach a remote multicast domain through SA encapsulation.
+
+Configure the threshold globally:
+
+```text
+ip msdp ttl-threshold <peer-address> <ttl>
+```
+
+For example:
+
+```text
+RP1(config)# ip msdp ttl-threshold 10.0.0.2 8
+```
+
+The original multicast packet's TTL determines whether it can be included in an SA message sent to `10.0.0.2`:
+
+| Original Multicast TTL | Encapsulated in SA? |
+|---|---|
+| `1` | No |
+| `7` | No |
+| `8` | Yes |
+| `16` | Yes |
+
+Packets whose TTL is **less than 8** are not encapsulated. The threshold permits packets with TTL **greater than or equal to 8**.
+
+By default, the threshold is `0`, so multicast packets with a TTL greater than `0` are eligible for encapsulation.
+
+**The command filters only the optional encapsulated multicast data, not the SA's `(S,G)` advertisements or the MSDP TCP session.** A peer can still learn about the source without receiving an encapsulated data packet.
+
+## SA Message Propagation
 When an MSDP speaker receives an SA message, it may forward that message to other MSDP peers.
 
 However, forwarding is subject to **MSDP Peer-RPF** and filtering rules.
@@ -283,7 +304,6 @@ In larger topologies, Peer-RPF and mesh-group rules control SA propagation and p
 These mechanisms are covered in [MSDP Peer-RPF and Mesh Groups](peer-rpf.md).
 
 ## The SA Cache
-
 The **SA cache** stores information about active multicast sources learned through MSDP.
 
 Each cached entry associates a source and group with the originating RP.
@@ -300,7 +320,6 @@ MSDP Peer:      10.0.0.1
 The SA cache allows RP2 to remember this source information even when no receivers are currently interested in the group.
 
 ### SA Cache vs. Multicast Routing Table
-
 The SA cache is different from the multicast routing table.
 
 | SA Cache | Multicast Routing Table |
@@ -314,7 +333,6 @@ The SA cache is different from the multicast routing table.
 **An SA cache entry does not necessarily mean an `(S,G)` forwarding entry exists.**
 
 ### Example: No Interested Receivers
-
 Suppose RP2 receives an SA message for:
 
 ```text
@@ -335,7 +353,6 @@ But RP2 does not send an `(S,G)` Join toward the source merely because the SA ex
 The source information remains available for future receiver joins.
 
 ### Example: Receiver Joins Later
-
 Now suppose Rec joins `239.1.1.1`.
 
 R4 sends a PIM `(*,G)` Join toward RP2.
@@ -354,7 +371,6 @@ It does not need to wait for RP1's next periodic SA message.
 **SA caching reduces the delay between a receiver joining a group and the RP discovering an already active source.**
 
 ## SA Cache Aging
-
 SA cache entries are maintained as **soft state**.
 
 Each entry has an aging timer that is refreshed when a valid SA advertisement for the source and group is received.
@@ -387,7 +403,6 @@ An SA cache entry may expire even while the MSDP TCP session remains established
 Likewise, a cached source can remain known for some time after the MSDP peer or source becomes unavailable, until the relevant state expires or is cleared.
 
 ### SA Caching on IOS XE
-
 On current supported IOS XE releases, **MSDP SA caching is enabled by default and is mandatory**.
 
 There is normally no need to configure an additional command to enable SA caching.
@@ -403,7 +418,6 @@ This command was used to enable SA caching on releases where it was not enabled 
 For current IOS XE operation, focus on verifying the cache rather than manually enabling it.
 
 ## IOS XE SA Origination Filtering
-
 By default, an MSDP-enabled RP originates SA messages for all locally registered multicast sources.
 
 The **`ip msdp redistribute`** command controls which multicast `(S,G)` entries are eligible for **local SA origination**.
@@ -413,20 +427,19 @@ Despite its name, this command does not perform ordinary unicast route redistrib
 The syntax is:
 
 ```text
-ip msdp redistribute [list <acl>] [asn <as-path-acl>] [route-map <name>]
+ip msdp redistribute [list \<acl>] [asn \<as-path-acl>] [route-map \<name>]
 ```
 
 | Option | Purpose |
 |---|---|
 | No options | Suppresses all locally originated SA messages |
-| `list <acl>` | Filters locally originated SA messages based on source and group addresses |
-| `asn <as-path-acl>` | Filters SA origination using a BGP AS-path access list |
-| `route-map <name>` | Filters SA origination using a route map |
+| `list \<acl>` | Filters locally originated SA messages based on source and group addresses |
+| `asn \<as-path-acl>` | Filters SA origination using a BGP AS-path access list |
+| `route-map \<name>` | Filters SA origination using a route map |
 
 Multiple filtering options can be combined. When multiple filters are specified, **all conditions must be satisfied** for the source to be advertised.
 
 ### Default Behavior vs. `ip msdp redistribute`
-
 There is an important distinction between **not configuring the command** and **configuring it without options**.
 
 **Default: Command Not Configured**
@@ -476,11 +489,10 @@ The behavior is summarized below:
 |---|---|
 | Command not configured | All locally registered sources advertised |
 | `ip msdp redistribute` | No local sources advertised |
-| `ip msdp redistribute list <acl>` | Only permitted `(S,G)` entries advertised |
+| `ip msdp redistribute list \<acl>` | Only permitted `(S,G)` entries advertised |
 | `no ip msdp redistribute` | Restores default behavior |
 
 ### Permit Specific Sources and Groups
-
 The `list` option restricts SA origination using an IPv4 ACL.
 
 An **extended ACL** can match both the multicast source and group, whereas a standard ACL can match only the source address.
@@ -523,7 +535,6 @@ The ACL's implicit deny prevents unmatched source/group combinations from being 
 **Unlike the command without options, `ip msdp redistribute list` allows selected sources to be advertised instead of suppressing all local advertisements.**
 
 ### Filter by Source Address Only
-
 The `ip msdp redistribute list` command requires an **extended IPv4 ACL**, even when filtering only by multicast source address.
 
 To permit all sources in `192.0.2.0/24`, regardless of the multicast group:
@@ -531,7 +542,6 @@ To permit all sources in `192.0.2.0/24`, regardless of the multicast group:
 ```text
 RP1(config)# ip access-list extended MSDP-SOURCES
 RP1(config-ext-nacl)# permit ip 192.0.2.0 0.0.0.255 any
-
 RP1(config)# ip msdp redistribute list MSDP-SOURCES
 ```
 
@@ -551,12 +561,11 @@ Using `any` in the destination field allows the permitted sources to be advertis
 **Only extended ACLs are supported**, but either the source or group can be matched independently by using `any` for the other field.
 
 ### AS-Path and Route-Map Filtering
-
 The command also supports more advanced filtering using:
 
 ```text
-ip msdp redistribute asn <as-path-acl>
-ip msdp redistribute route-map <name>
+ip msdp redistribute asn \<as-path-acl>
+ip msdp redistribute route-map \<name>
 ```
 
 - **`asn`:** Uses a BGP AS-path access list to determine which sources are eligible for SA origination.
@@ -567,7 +576,6 @@ These options are primarily relevant to more complex MSDP deployments involving 
 For a typical CCIE Enterprise Infrastructure **Anycast RP deployment**, filtering by `(S,G)` using the `list` option is generally sufficient.
 
 ### SA Origination vs. SA Forwarding
-
 `ip msdp redistribute` controls **locally originated** SA messages.
 
 It does not prevent the router from forwarding SA messages received from other MSDP peers.
@@ -592,8 +600,8 @@ RP2 will:
 To filter SA messages sent to or received from specific peers, use:
 
 ```text
-ip msdp sa-filter in <peer-address> list <acl>
-ip msdp sa-filter out <peer-address> list <acl>
+ip msdp sa-filter in \<peer-address> list \<acl>
+ip msdp sa-filter out \<peer-address> list \<acl>
 ```
 
 The distinction is:
@@ -607,7 +615,6 @@ The distinction is:
 > **Note:** `ip msdp redistribute` can also be used to advertise sources known through multicast routing state that have not registered with the local RP. However, Cisco strongly recommends against advertising sources that have not registered with the RP.
 
 ### Verification
-
 Check the configured SA origination policy:
 
 ```text
@@ -629,7 +636,6 @@ RP1# show ip msdp peer 10.0.0.2
 When testing changes, remember that previously advertised SA entries may remain in the receiving RP's cache until they expire.
 
 ## Key Points
-
 - By default, an MSDP-enabled RP advertises all locally registered sources.
 - **`ip msdp redistribute` without options suppresses all local SA origination.**
 - **`no ip msdp redistribute` restores the default behavior**, allowing locally registered sources to be advertised.
@@ -640,14 +646,13 @@ When testing changes, remember that previously advertised SA entries may remain 
 - Use `ip msdp sa-filter in/out` to control SA information exchanged with individual peers.
 
 ## Incoming and Outgoing SA Filtering
-
 IOS XE supports filtering Source-Active (SA) messages received from or sent to individual MSDP peers.
 
 Two commands are available:
 
 ```text
-ip msdp sa-filter in <peer-address> [list <acl>] [rp-list <acl>]
-ip msdp sa-filter out <peer-address> [list <acl>] [rp-list <acl>]
+ip msdp sa-filter in \<peer-address> [list \<acl>] [rp-list \<acl>]
+ip msdp sa-filter out \<peer-address> [list \<acl>] [rp-list \<acl>]
 ```
 
 - **`in`:** Filters SA information received from the specified MSDP peer.
@@ -668,7 +673,6 @@ Both options are optional and can be used independently or together.
 - **Both configured:** The SA entry must be permitted by **both ACLs**.
 
 ### Filtering All SA Messages from a Peer
-
 To block all incoming SA messages from RP1 (`10.0.0.1`) on RP2:
 
 ```text
@@ -695,7 +699,6 @@ RP1(config)# no ip msdp sa-filter out 10.0.0.2
 **Important:** Not configuring `ip msdp sa-filter` allows SA messages by default. Configuring it with only a peer address blocks all SA messages in the specified direction.
 
 ### Incoming SA Filter Using `list`
-
 An incoming SA filter controls which SA information a router accepts from a specified MSDP peer.
 
 Suppose RP2 should accept only:
@@ -734,7 +737,6 @@ For example:
 The ACL's implicit deny rejects unmatched `(S,G)` entries.
 
 ### Incoming SA Filter Using `rp-list`
-
 The `rp-list` option filters SA messages based on the **originating RP address carried inside the SA message**.
 
 This is not necessarily the same as the MSDP peer address.
@@ -776,7 +778,6 @@ The `rp-list` ACL does not examine the multicast source or group addresses.
 **`rp-list` filters based on where the SA originated, not necessarily which peer forwarded it.**
 
 ### Combining `list` and `rp-list`
-
 Both options can be configured together.
 
 For example, suppose RP2 should accept SA information from RP1 only if:
@@ -819,7 +820,6 @@ The resulting behavior is:
 A deny in either ACL, including an implicit deny, causes the matching SA information to be rejected.
 
 ### Outgoing SA Filtering
-
 An outgoing SA filter controls which SA information is sent to a specified MSDP peer.
 
 For example, RP1 should advertise only:
@@ -849,7 +849,6 @@ The `rp-list` option is also supported for outgoing filters:
 ```text
 RP1(config)# ip access-list standard MSDP-RPS
 RP1(config-std-nacl)# permit host 10.0.0.1
-
 RP1(config)# ip msdp sa-filter out 10.0.0.2 rp-list MSDP-RPS
 ```
 
@@ -863,7 +862,6 @@ Unlike `ip msdp redistribute`, an outgoing SA filter applies to both:
 - SA messages received from other peers and forwarded toward the specified peer.
 
 ### Comparison of SA Filtering Commands
-
 | Command | Function |
 |---|---|
 | `ip msdp redistribute` | Controls local SA origination |
@@ -877,13 +875,12 @@ Unlike `ip msdp redistribute`, an outgoing SA filter applies to both:
 However, rejecting an SA advertisement can indirectly prevent multicast connectivity if a remote RP needs that advertisement to discover the source.
 
 ## Limiting SA Cache Entries
-
 MSDP can learn large numbers of active multicast sources.
 
 IOS XE provides the following command to limit how much SA state is accepted from a particular peer:
 
 ```text
-ip msdp sa-limit <peer-address> <limit>
+ip msdp sa-limit \<peer-address> \<limit>
 ```
 
 For example, on RP2:
@@ -903,9 +900,7 @@ This command can protect the router against excessive SA state caused by misconf
 The limit should account for the number of active `(S,G)` sources expected from the peer.
 
 ## IOS XE Verification
-
 ### Verify MSDP Peering
-
 Before troubleshooting SA advertisements, verify that the TCP session is established.
 
 ```text
@@ -918,7 +913,6 @@ Both RPs should report the peer relationship as **Up**.
 An MSDP session can be established even when no active sources are being advertised.
 
 ### Display the SA Cache
-
 On RP2:
 
 ```text
@@ -947,7 +941,6 @@ The important fields are:
 If the cache entry is being refreshed by periodic SA messages, its expiration timer should be refreshed.
 
 ### Display SA Counts
-
 ```text
 RP2# show ip msdp count
 ```
@@ -957,7 +950,6 @@ This displays SA state counters, including the number of source and group entrie
 The command is useful for determining whether RP2 is accumulating the expected source information.
 
 ### Verify Detailed Peer Statistics
-
 ```text
 RP2# show ip msdp peer 10.0.0.1
 ```
@@ -971,7 +963,6 @@ Examine:
 - Peer status and reset counters.
 
 ### Compare the SA Cache and Multicast Routing Table
-
 On RP2:
 
 ```text
@@ -991,7 +982,6 @@ Interpret the results carefully:
 **The SA cache and multicast routing table are separate databases. An entry in one does not guarantee a corresponding entry in the other.**
 
 ### Clear the SA Cache
-
 Clear all cached SA information:
 
 ```text
@@ -1009,7 +999,6 @@ This can be useful for observing how new SA advertisements repopulate the cache.
 Clearing the SA cache does not directly remove all PIM multicast forwarding state.
 
 ### Debug SA Processing
-
 For detailed MSDP debugging:
 
 ```text
@@ -1031,7 +1020,6 @@ RP2# undebug all
 ```
 
 ## Common Troubleshooting Problems
-
 | Problem | Possible Cause |
 |---|---|
 | RP1 does not originate SA messages | Source has not registered locally, MSDP not operational, or SA origination filter |
@@ -1047,13 +1035,14 @@ RP2# undebug all
 When troubleshooting, distinguish three separate operations:
 
 1. **MSDP peering:** Is the TCP session established?
+
 2. **MSDP source discovery:** Are valid SA messages being received and cached?
+
 3. **PIM forwarding:** Does the receiving RP establish the required multicast forwarding state?
 
 A successful MSDP session does not guarantee successful source discovery, and successful source discovery does not guarantee multicast data delivery.
 
 ## Key Points
-
 - **MSDP SA messages advertise active multicast sources** between RPs.
 - An RP normally originates SA messages for **locally registered sources**.
 - IPv4 Source-Active messages use **MSDP TLV Type 1**.
@@ -1061,6 +1050,7 @@ A successful MSDP session does not guarantee successful source discovery, and su
 - In an Anycast RP deployment, the SA RP Address field must contain the unique Originator ID, **not the shared Anycast RP address**.
 - The default **SA Advertisement Period is 60 seconds**.
 - An initial SA message may contain an encapsulated multicast data packet.
+- `ip msdp ttl-threshold <peer> <ttl>` prevents packets with an original multicast TTL below the threshold from being encapsulated in SA messages sent to that peer; SA advertisements are unaffected.
 - Periodic SA advertisements normally contain source information without multicast data.
 - MSDP speakers may forward received SA messages, subject to Peer-RPF and filtering rules.
 - **The SA cache stores active source information learned through MSDP**.
@@ -1074,9 +1064,8 @@ A successful MSDP session does not guarantee successful source discovery, and su
 - Verify SA information using `show ip msdp sa-cache`, `show ip msdp count`, and `show ip msdp peer`.
 
 ## References
-
-- [Cisco IOS XE: Using MSDP to Interconnect Multiple PIM-SM Domains](https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/ip-multicast/b-ip-multicast/m_imc_msdp_im_pim_sim.html)
-- [Cisco IOS XE: Multicast Configuration Guide, MSDP](https://www.cisco.com/c/en/us/td/docs/switches/lan/c9000/multicast/multicast-configuration-guide/msdp.html)
-- [Cisco: Multicast Source Discovery Protocol SA Filter Recommendations](https://www.cisco.com/c/en/us/support/docs/ip/ip-multicast/13717-49.html)
-- [RFC 3618: Multicast Source Discovery Protocol](https://www.rfc-editor.org/rfc/rfc3618)
-- [RFC 3446: Anycast Rendezvous Point Mechanism Using PIM and MSDP](https://www.rfc-editor.org/rfc/rfc3446)
+- [Cisco IOS XE: Using MSDP to Interconnect Multiple PIM-SM Domains](https\://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/ip-multicast/b-ip-multicast/m_imc_msdp_im_pim_sim.html)
+- [Cisco IOS XE: Multicast Configuration Guide, MSDP](https\://www.cisco.com/c/en/us/td/docs/switches/lan/c9000/multicast/multicast-configuration-guide/msdp.html)
+- [Cisco: Multicast Source Discovery Protocol SA Filter Recommendations](https\://www.cisco.com/c/en/us/support/docs/ip/ip-multicast/13717-49.html)
+- [RFC 3618: Multicast Source Discovery Protocol](https\://www.rfc-editor.org/rfc/rfc3618)
+- [RFC 3446: Anycast Rendezvous Point Mechanism Using PIM and MSDP](https\://www.rfc-editor.org/rfc/rfc3446)

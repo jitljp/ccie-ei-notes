@@ -255,10 +255,11 @@ If LSA has Down Bit set, ignore the route.
 Use this topology:
 
 ```text
-CE1 --- PE1 === MPLS VPN === PE2 --- CE2
-                  ||            \    /
-                  ||              CE3
-                  PE3______________/
+                        PE2 --- CE2
+                        //       |
+CE1 --- PE1 === MPLS VPN         | SITE B
+  SITE A                \\       |
+                        PE3 --- CE3
 ```
 
 CE1 advertises `10.10.10.0/24` to PE1.

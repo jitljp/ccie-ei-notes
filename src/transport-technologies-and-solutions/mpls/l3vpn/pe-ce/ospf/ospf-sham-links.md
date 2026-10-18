@@ -40,7 +40,6 @@ Example:
 ```text
 CE1 LAN:
 10.10.10.0/24
-
 CE2 LAN:
 11.11.11.0/24
 ```
@@ -63,8 +62,6 @@ Now add a direct OSPF backdoor link between CE1 and CE2:
 CE1 --- PE1 === PE2 --- CE2
  |                      |
  +----- backdoor -------+
-
-
 CE1# show run int e0/1
 !
 interface Ethernet0/1
@@ -72,7 +69,6 @@ interface Ethernet0/1
  ip ospf network point-to-point
  ip ospf 1 area 0
  ip ospf cost 100
-
 CE2# show run int e0/1
 !
 interface Ethernet0/1
@@ -93,7 +89,7 @@ OSPF prefers the backdoor link, even though the cost is `101` (vs `21`).
 
 That is due to OSPF's route type preference:
 
-```
+```text
 Intra-area > inter-area > external
 ```
 
@@ -178,7 +174,6 @@ Routes that would otherwise appear as inter-area can appear as intra-area.
 ```text
 Without sham link:
 CE2 learns CE1 LAN as O IA.
-
 With sham link:
 CE2 learns CE1 LAN as O.
 ```
@@ -191,7 +186,8 @@ A sham link creates a logical point-to-point OSPF link between the PE routers in
 
 The PEs form an OSPF adjacency over this link and exchange LSAs directly.
 
-Because os this, routes learned across it can remain intra-area
+Because of this, routes learned across it can remain intra-area
+
 instead of being represented as inter-area routes through the MPLS VPN superbackbone.
 
 This is what allows the MPLS VPN path to compete with a customer backdoor link using normal OSPF intra-area cost comparison.
@@ -211,10 +207,8 @@ Customer data traffic still follows normal MPLS L3VPN forwarding:
 ```text
 Ingress PE:
 VRF lookup.
-
 Core:
 Transport label switching.
-
 Egress PE:
 VPN label disposition.
 ```
@@ -246,8 +240,42 @@ The area in the sham-link command must match the area where you want the logical
 
 ```text
 router ospf 10 vrf CUSTOMER_A
+ domain-id 0.0.0.10
  area 0 sham-link 172.16.1.1 172.16.2.2
 ```
+
+### OSPF Domain IDs and Sham-Link Operation
+
+**Matching OSPF Domain IDs are recommended for sites that belong to the same customer OSPF domain, but they are not required for the sham-link adjacency to form.**
+
+The OSPF Domain ID is carried with OSPF-derived VPN routes in MP-BGP. A receiving PE uses it when deciding how to reintroduce those routes into its local OSPF instance:
+
+- **Matching Domain IDs:** Originally internal OSPF routes learned through VPNv4 are normally advertised to the CE as inter-area routes (`O IA`).
+- **Different Domain IDs:** Those BGP-learned routes are treated as coming from another OSPF domain and may be advertised as external routes (`O E1` or `O E2`).
+
+A **sham link operates differently**. It creates an OSPF adjacency directly between the PEs in a specified area. The PEs flood intra-area LSAs across the sham link; the Domain ID is **not** an OSPF Hello or adjacency-matching parameter.
+
+Therefore, even with different Domain IDs, a FULL sham-link adjacency can carry intra-area LSAs, and a CE can still learn remote routes as **`O`** rather than `O E1` or `O E2`.
+
+Example with intentionally different Domain IDs:
+
+```text
+PE1:
+router ospf 10 vrf CUSTOMER_A
+ domain-id 0.0.0.10
+ area 0 sham-link 172.16.1.1 172.16.2.2
+!
+PE2:
+router ospf 20 vrf CUSTOMER_A
+ domain-id 0.0.0.20
+ area 0 sham-link 172.16.2.2 172.16.1.1
+```
+
+The sham link **can still become FULL**, and remote intra-area routes **can still appear as `O`** at the CEs. This does not demonstrate that the Domain IDs match; it demonstrates that the intra-area path is being learned via OSPF LSA flooding over the sham link instead of solely through BGP-to-OSPF route translation.
+
+For a conventional **same-domain** L3VPN design, use matching Domain IDs to preserve the intended route classification when routes are imported from MP-BGP. OSPF process IDs (`10` and `20` above) do **not** need to match. Both sides can also use the default NULL Domain ID when appropriate.
+
+See [OSPF Domain ID](ospf-domain-id.md) for the detailed VPN route classification rules.
 
 ### The sham link is configured between PE routers
 
@@ -256,7 +284,6 @@ The sham link is configured on the PEs, not on the CEs.
 ```text
 PE1:
 area 0 sham-link 172.16.1.1 172.16.2.2
-
 PE2:
 area 0 sham-link 172.16.2.2 172.16.1.1
 ```
@@ -295,6 +322,8 @@ The endpoint routes should be carried through MP-BGP VPNv4.
 
 The sham link is supposed to run over the VPN path, so the endpoint /32 routes should be in BGP/VPNv4.
 
+**Do not advertise the sham-link endpoint addresses through OSPF.** They must be carried by BGP so that the sham link uses the VPN path rather than potentially resolving its endpoint through an OSPF backdoor path. This includes avoiding accidental redistribution of a remote BGP-learned endpoint or a local connected endpoint into OSPF.
+
 ---
 
 ## Basic Sham Link Topology
@@ -303,7 +332,6 @@ Use this example:
 
 ```text
 Customer A Site 1                    Customer A Site 2
-
 10.10.10.0/24                        11.11.11.0/24
       |                                      |
      CE1 ---------- backdoor link --------- CE2
@@ -316,15 +344,18 @@ OSPF area:
 ```text
 CE1-to-PE1 link:
 Area 0
-
 CE2-to-PE2 link:
 Area 0
-
 CE1-to-CE2 backdoor link:
 Area 0
-
 PE1-to-PE2 sham link:
 Area 0
+```
+
+OSPF Domain ID on both PEs:
+
+```text
+0.0.0.10
 ```
 
 Sham-link endpoints:
@@ -332,7 +363,6 @@ Sham-link endpoints:
 ```text
 PE1 Loopback100 in CUSTOMER_A:
 172.16.1.1/32
-
 PE2 Loopback100 in CUSTOMER_A:
 172.16.2.2/32
 ```
@@ -341,7 +371,6 @@ Goal:
 
 ```text
 Prefer the MPLS VPN path.
-
 Use the backdoor link only as backup.
 ```
 
@@ -396,7 +425,6 @@ Example on PE1:
 ```text
 route-map CONNECTED-TO-BGP permit 10
  match interface loopback100
-
 router bgp 65000
  address-family ipv4 vrf CUSTOMER_A
   redistribute connected route-map CONNECTED-TO-BGP
@@ -408,7 +436,32 @@ The important point:
 
 ```text
 The remote sham-link endpoint must be reachable in the VRF through BGP/VPNv4.
+
+The sham-link endpoint routes must **not** be learned through OSPF.
 ```
+
+### Preventing Sham-Link Endpoints from Entering OSPF
+
+**Advertising the endpoint loopbacks into BGP is necessary; advertising them into OSPF is not.**
+
+If BGP routes are explicitly redistributed into the VRF's OSPF process, an unfiltered `redistribute bgp` can cause the remote sham-link /32 to be advertised to CEs. Filter these endpoints from BGP-to-OSPF redistribution.
+
+Example on PE1 (and similarly on PE2):
+
+```text
+ip prefix-list SHAM_ENDPOINTS seq 5 permit 172.16.1.1/32
+ip prefix-list SHAM_ENDPOINTS seq 10 permit 172.16.2.2/32
+!
+route-map BGP_TO_OSPF deny 10
+ match ip address prefix-list SHAM_ENDPOINTS
+!
+route-map BGP_TO_OSPF permit 20
+!
+router ospf 10 vrf CUSTOMER_A
+ redistribute bgp 65000 subnets route-map BGP_TO_OSPF
+```
+
+Also avoid enabling OSPF on the local endpoint loopback or accidentally including it in `redistribute connected` into OSPF.
 
 Verify on PE1:
 
@@ -434,6 +487,7 @@ PE1:
 
 ```text
 router ospf 10 vrf CUSTOMER_A
+ domain-id 0.0.0.10
  area 0 sham-link 172.16.1.1 172.16.2.2
 ```
 
@@ -441,6 +495,7 @@ PE2:
 
 ```text
 router ospf 10 vrf CUSTOMER_A
+ domain-id 0.0.0.10
  area 0 sham-link 172.16.2.2 172.16.1.1
 ```
 
@@ -455,6 +510,8 @@ The local address is the local PE's sham-link endpoint.
 The remote address is the remote PE's sham-link endpoint.
 
 The cost controls the OSPF metric across the sham link.
+
+The matching `domain-id 0.0.0.10` commands are a **same-domain design choice**, not an adjacency requirement. The sham-link area must match on both PEs. Even if the Domain IDs differ, the sham link can form an OSPF adjacency and exchange intra-area LSAs.
 
 > The default cost of a sham link is **1**.
 
@@ -489,7 +546,6 @@ OSPF can compare the cost.
 ```text
 Backdoor:
 O, cost 101
-
 MPLS VPN with sham link:
 O, cost 22
 ```
@@ -503,7 +559,7 @@ So the path through the service provider is preferred.
 Verify sham links with this command:
 
 ```text
-PE1# show ip ospf sham-links 
+PE1# show ip ospf sham-links
 Sham Link OSPF_SL0 to address 172.16.2.2 is up
 Area 0 source address 172.16.1.1
   Run as demand circuit
@@ -517,7 +573,15 @@ Area 0 source address 172.16.1.1
     Last retransmission scan time is 0 msec, maximum is 0 msec
 ```
 
-Additionally, verify that the CE routers are now receiving **intra-area** routes (type `O`).
+To inspect (but **not** validate the sham-link adjacency using) the Domain ID configuration on each PE:
+
+```text
+show running-config | section router ospf
+```
+
+Matching Domain IDs are useful for the expected MP-BGP-to-OSPF route classification, but are **not required for the sham-link adjacency**.
+
+Additionally, verify that the CE routers receive **intra-area** routes (type `O`) through the intended VPN path. An `O` route alone does not prove that the sham link is being used, because an OSPF backdoor link can also produce `O` routes. Check the selected next hop and OSPF cost.
 
 ---
 
@@ -543,6 +607,19 @@ The sham link makes the VPN path intra-area, but OSPF still chooses the lowest-c
 If the backdoor path has a lower cost, it will still be preferred.
 
 Increase the backdoor link cost or lower the sham-link cost.
+
+### Remote routes appear as external (`O E1` or `O E2`)
+
+Check whether the route is being **reintroduced from MP-BGP VPNv4 into OSPF**. For an originally internal OSPF route, a Domain ID mismatch can cause that imported BGP route to be advertised as external.
+
+However, **a Domain ID mismatch does not force every remote route to become external**. If the sham link is FULL, intra-area LSAs exchanged over it can still make the same prefix appear as `O` at the CE.
+
+When troubleshooting, determine which mechanism supplies the selected path:
+
+- **OSPF LSA flooding over the sham link:** Can produce `O` routes despite mismatched Domain IDs.
+- **MP-BGP-to-OSPF route translation:** Domain IDs influence whether originally internal routes are introduced as `O IA` or external routes.
+
+If the sham link is down, inspect the BGP endpoint routes and the OSPF adjacency first. If the sham link is up but the result is unexpected, examine the received LSAs, selected OSPF next hop, costs, and any competing BGP-reintroduced routes.
 
 ### The CE still sees `O IA`
 
@@ -578,11 +655,8 @@ A sham link is normally needed only when:
 
 ```text
 The same customer OSPF area exists at multiple sites.
-
 There is a backdoor OSPF link between those sites.
-
 The backdoor route is preferred because it is intra-area.
-
 You want the MPLS VPN path to compete as an intra-area path.
 ```
 
@@ -603,9 +677,12 @@ If the customer is fine using the backdoor link as primary, you may not need a s
 * After the sham link is up, OSPF can compare the VPN path and backdoor path using cost.
 * A sham link is configured between PE routers under the customer VRF OSPF process.
 * The sham link belongs to an OSPF area.
+* Matching **OSPF Domain IDs** are recommended for same-domain MP-BGP-to-OSPF route classification, but they are **not required for the sham-link adjacency**. OSPF process IDs may differ.
+* Sham links directly exchange intra-area LSAs. A CE can still learn remote routes as `O` when the PE Domain IDs differ.
+* Domain ID mismatches can cause originally internal routes **reintroduced from MP-BGP into OSPF** to be classified as external; this does not override intra-area LSAs learned across an operational sham link.
 * Sham-link endpoints are usually /32 loopbacks inside the customer VRF.
 * The remote sham-link endpoint must be reachable through MP-BGP VPNv4.
-* The sham-link endpoint route should not be learned through OSPF over the backdoor link.
+* Sham-link endpoint routes must **not** be advertised by OSPF. Filter endpoints when necessary to prevent unintentional BGP-to-OSPF redistribution and avoid OSPF on the local endpoint loopback.
 * The CE routers do not configure the sham link.
 * A sham link affects the OSPF control plane, not the MPLS data-plane forwarding mechanism.
 * A sham link is different from an OSPF virtual link.

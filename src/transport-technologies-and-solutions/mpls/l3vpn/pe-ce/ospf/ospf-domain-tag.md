@@ -334,6 +334,7 @@ CE2# show ip route 10.10.20.0
 
 ---
 
+
 ## Domain Tag and Domain ID
 
 Do not confuse Domain Tag with Domain ID.
@@ -355,7 +356,7 @@ Different Domain ID:
 Internal routes are advertised as external.
 ```
 
-The Domain Tag is loop prevention for external LSAs.
+The Domain Tag is a loop-prevention mechanism for external OSPF routes (Type 5 and Type 7 LSAs).
 
 Example:
 
@@ -364,8 +365,40 @@ PE-originated Type 5 or Type 7 LSA:
 Set the VPN Route Tag.
 
 Another PE receives it from OSPF:
-Ignore it for route calculation.
+If the tag matches its local Domain Tag,
+ignore the LSA for route calculation.
 ```
+
+## Why Is the Domain Tag Needed If the Down Bit Already Prevents Loops?
+
+The **Down Bit** already provides loop prevention for Type 3, Type 5, and Type 7 LSAs.
+
+In modern IOS XE, PEs can use both mechanisms for external routes:
+
+```text
+Type 3 LSA:
+Down Bit
+
+Type 5 / Type 7 LSA:
+Down Bit + Domain Tag
+```
+
+The main reason the Domain Tag still exists is **backward compatibility**.
+
+Older MPLS VPN implementations did not consistently set the Down Bit in Type 5 external LSAs. Instead, they relied on a special OSPF route tag to prevent routes from being advertised back into the VPN.
+
+RFC 4577 requires the Down Bit on Type 5 LSAs but retains the VPN Route Tag mechanism for interoperability with older implementations.
+
+Therefore:
+
+- **Down Bit:** The primary loop-prevention mechanism in modern implementations.
+- **Domain Tag:** An additional mechanism retained mainly for backward compatibility with older implementations.
+
+If all PEs correctly implement Down Bit loop prevention, the Domain Tag is generally redundant.
+
+However, the Domain Tag uses the normal **OSPF External Route Tag** field. If a customer originates an external route with a tag matching the PE's Domain Tag, the PE may incorrectly treat that route as VPN-originated and ignore it.
+
+For this reason, the Domain Tag should not conflict with route tags used within the customer OSPF domain.
 
 ---
 

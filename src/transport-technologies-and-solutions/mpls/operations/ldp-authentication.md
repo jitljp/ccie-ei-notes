@@ -554,7 +554,13 @@ mpls ldp password required for LDP-AUTH-REQUIRED
 
 ## Password Rollover
 
-The password rollover feature lets a router delay the moment when a new password takes effect.
+LDP **password rollover** allows the MD5 authentication password to be changed **without tearing down the existing TCP/LDP session**.
+
+When a password changes, the router can temporarily support both the **old password** and the **new password**, allowing the two LDP peers to transition without simultaneously changing their configurations.
+
+Without rollover, changing the password on only one router can cause TCP MD5 authentication failures, disrupting the LDP session.
+
+### Configuring Password Rollover
 
 Command:
 
@@ -568,32 +574,114 @@ Example:
 mpls ldp password rollover duration 10
 ```
 
-This gives you time to change the password on multiple routers before the new password is used.
+- Configures a **10-minute delay** before a newly configured password becomes active for transmission.
+- During this delay, the router continues using the old password for outgoing TCP segments.
+- The rollover mechanism allows the new password to be introduced without immediately invalidating the existing session.
+- The configured duration is **5–65535 minutes**.
 
-Example requirement:
+The rollover duration gives administrators time to update the passwords on multiple routers before the new passwords are used.
+
+### Example: Changing an LDP Password
+
+Requirement:
 
 ```text
 Change the P1-P2 LDP password from OLD-PW to NEW-PW.
 Allow 10 minutes to update both routers.
+Preserve the existing LDP session.
 ```
 
-P1:
+Assume:
+
+- P1's LDP router ID is `2.2.2.2`.
+- P2's LDP router ID is `3.3.3.3`.
+- Both routers currently authenticate their LDP session using `OLD-PW`.
+
+**Step 1: Configure the new password on P1.**
 
 ```text
-mpls ldp password rollover duration 10
-mpls ldp neighbor 3.3.3.3 password NEW-PW
+P1(config)# mpls ldp password rollover duration 10
+P1(config)# mpls ldp neighbor 3.3.3.3 password NEW-PW
 ```
 
-P2:
+P1 does not immediately start transmitting TCP segments authenticated with `NEW-PW`.
+
+Instead, it continues using `OLD-PW` during the configured rollover delay.
+
+**Step 2: Configure the new password on P2.**
 
 ```text
-mpls ldp password rollover duration 10
-mpls ldp neighbor 2.2.2.2 password NEW-PW
+P2(config)# mpls ldp password rollover duration 10
+P2(config)# mpls ldp neighbor 2.2.2.2 password NEW-PW
 ```
 
-After the rollover duration expires, IOS XE applies the new password.
+P2 also continues using `OLD-PW` during its rollover delay.
 
-This can avoid immediately breaking the session while you update both peers.
+**Step 3: The passwords roll over.**
+
+After each router's rollover delay expires:
+
+- The router begins transmitting TCP segments authenticated with `NEW-PW`.
+- The receiving peer can accept the new password during the transition.
+- When TCP successfully authenticates a segment using the new password, it switches to that password and discards the old password.
+
+The existing TCP/LDP session can remain established throughout the process.
+
+### Rollover Timeline
+
+| Stage | P1 | P2 |
+|---|---|---|
+| Initial | Uses OLD-PW | Uses OLD-PW |
+| P1 reconfigured | Continues sending OLD-PW | Uses OLD-PW |
+| P2 reconfigured | Continues sending OLD-PW | Continues sending OLD-PW |
+| Rollover begins | Transitions to NEW-PW | Transitions to NEW-PW |
+| Complete | Uses NEW-PW | Uses NEW-PW |
+
+The timers are local to each router, so their rollover times might not be identical.
+
+The temporary acceptance of the old and new passwords allows the transition to occur without requiring perfectly synchronized configuration changes.
+
+### Keychain-Based Rollover
+
+LDP also supports MD5 authentication using **keychains**.
+
+With keychains, password transitions are controlled using:
+
+- **send-lifetime:** Determines when a key is used to authenticate outgoing TCP segments.
+- **accept-lifetime:** Determines when a key can authenticate incoming TCP segments.
+
+By overlapping the accept lifetimes of successive keys, a router can accept **both old and new passwords** during a transition period.
+
+This allows the peers to start transmitting with the new password at slightly different times.
+
+For keychain-based rollover, the transition window is determined by the overlapping accept lifetimes rather than the `mpls ldp password rollover duration` timer.
+
+### Verification
+
+```text
+show mpls ldp neighbor
+show mpls ldp neighbor password
+debug mpls ldp transport connections
+```
+
+Useful syslog messages include:
+
+```text
+%LDP-5-PWDCFG
+%LDP-5-PWDRO
+```
+
+`PWDCFG` indicates a password configuration change, while `PWDRO` indicates a completed password rollover.
+
+### Key Points
+
+- Password rollover allows LDP authentication passwords to change **without resetting the TCP/LDP session**.
+- `mpls ldp password rollover duration` delays activation of a newly configured password.
+- During the delay, the router continues transmitting using the old password.
+- During the rollover transition, TCP can accept both the old and new passwords.
+- After successfully authenticating a segment using the new password, TCP switches to the new password.
+- **Keychain-based rollover** uses overlapping accept lifetimes to accommodate password transitions.
+- Password rollover is distinct from the normal LDP password-selection process, which does not automatically try alternative password options when authentication fails.
 
 ---
 

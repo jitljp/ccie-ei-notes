@@ -307,19 +307,6 @@ Loop prevention
 Multihoming
 ```
 
-The following pages build from simple to more complex:
-
-```text
-1. PE-CE static routing
-2. PE-CE OSPF
-3. OSPF L3VPN special behaviors
-4. PE-CE EIGRP
-5. EIGRP L3VPN special behaviors
-6. PE-CE BGP
-7. BGP L3VPN special behaviors
-8. Troubleshooting for each protocol
-```
-
 ---
 
 ## Key Points

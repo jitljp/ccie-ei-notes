@@ -538,32 +538,103 @@ Advertisement spec:
 
 ---
 
-### Outbound Filtering: Advertise a Label Only to One Peer
+### Outbound Filtering: Advertise Labels to Selected Peers
 
-You can also advertise labels only to selected LDP peers.
+By default, LDP advertises its locally allocated label bindings to **all LDP peers**.
+
+You can control which prefixes are advertised and which peers receive those advertisements using:
+
+```text
+mpls ldp advertise-labels for <prefix-acl> to <peer-acl>
+```
+
+- **`for <prefix-acl>`:** Matches the FEC prefixes whose label advertisements are being controlled.
+- **`to <peer-acl>`:** Matches the LDP peers permitted to receive those label advertisements, using their **LDP router IDs**.
+
+These ACLs have different purposes, even though both use standard IP ACL syntax.
+
+### Behavior with Default Advertisement Enabled
+
+Consider the following configuration:
+
+```text
+ip access-list standard PE1
+ permit 1.1.1.1
+!
+ip access-list standard P2
+ permit 3.3.3.3
+!
+mpls ldp advertise-labels for PE1 to P2
+```
+
+Assume:
+
+- PE1's loopback is `1.1.1.1/32`.
+- PE2's loopback is `5.5.5.5/32`.
+- P2's LDP router ID is `3.3.3.3`.
+- P3's LDP router ID is `4.4.4.4`.
+
+Because default label advertisement remains enabled, the result is:
+
+| FEC | P2 | P3 | PE1 |
+|---|---|---|---|
+| 1.1.1.1/32 | Advertised | Not advertised | Not advertised |
+| 5.5.5.5/32 | Advertised | Advertised | Advertised |
+| Other eligible FECs | Advertised | Advertised | Advertised |
+
+**The `for PE1 to P2` rule restricts advertisements of the matching FEC to P2. It does not restrict P2 to receiving only that FEC.**
+
+FECs that do not match the prefix ACL continue to be advertised normally.
+
+### Behavior with Default Advertisement Disabled
+
+To advertise **only explicitly permitted labels**, first disable default label advertisement:
+
+```text
+no mpls ldp advertise-labels
+```
+
+Then configure the permitted prefix/peer combinations:
+
+```text
+mpls ldp advertise-labels for PE1 to P2
+```
+
+Result:
+
+| FEC | P2 | P3 | PE1 |
+|---|---|---|---|
+| 1.1.1.1/32 | Advertised | Not advertised | Not advertised |
+| 5.5.5.5/32 | Not advertised | Not advertised | Not advertised |
+| Other eligible FECs | Not advertised | Not advertised | Not advertised |
+
+Now P1 advertises **only PE1's loopback label, and only to P2**.
+
+FECs not matched by an explicit advertisement rule are not advertised.
+
+### Example: Different Labels for Different Peers
 
 Requirements:
 
-```
+```text
 P1 should advertise only PE1's loopback to P2 and P3.
 P1 should advertise only PE2's loopback to PE1.
 ```
 
-> I removed the previous section's filter from P1's configuration.
+Review of the configured addresses:
 
-Review of the configured IPs/RIDs:
-
-```
+```text
 PE1 loopback: 1.1.1.1/32
 PE2 loopback: 5.5.5.5/32
-PE1 RID: 1.1.1.1
-P2 RID: 3.3.3.3
-P3 RID: 4.4.4.4
+
+PE1 LDP RID: 1.1.1.1
+P2 LDP RID: 3.3.3.3
+P3 LDP RID: 4.4.4.4
 ```
 
 P1 configuration:
 
-```
+```text
 ip access-list standard PE1
  permit 1.1.1.1
 !
@@ -579,9 +650,15 @@ mpls ldp advertise-labels for PE1 to P2-P3
 mpls ldp advertise-labels for PE2 to PE1
 ```
 
-Result:
+The first advertisement rule permits P1 to advertise its label binding for `1.1.1.1/32` to P2 and P3.
 
-```
+The second permits P1 to advertise its label binding for `5.5.5.5/32` to PE1.
+
+The global `no mpls ldp advertise-labels` ensures that other FECs are not advertised.
+
+Verification:
+
+```text
 P1# show mpls ldp bindings detail | ex remote
 Advertisement spec:
         Prefix acl = PE1; Peer acl = P2-P3
@@ -590,37 +667,65 @@ Advertisement spec:
   lib entry: 1.1.1.1/32, rev 29, chkpt: none
         local binding:  label: 20 (owner LDP)
           Advertised to:
-          4.4.4.4:0              3.3.3.3:0   → ADVERTISED ONLY TO P2/P3
+          4.4.4.4:0              3.3.3.3:0
         Advert acl(s): Prefix acl PE1; Peer acl P2-P3
+
   lib entry: 2.2.2.2/32, rev 24, chkpt: none
         local binding:  label: imp-null (owner LDP)
+
   lib entry: 3.3.3.3/32, rev 25, chkpt: none
         local binding:  label: 16 (owner LDP)
+
   lib entry: 4.4.4.4/32, rev 26, chkpt: none
         local binding:  label: 23 (owner LDP)
+
   lib entry: 5.5.5.5/32, rev 30, chkpt: none
         local binding:  label: 24 (owner LDP)
           Advertised to:
-          1.1.1.1:0                           → ADVERTISED ONLY TO PE1
+          1.1.1.1:0
         Advert acl(s): Prefix acl PE2; Peer acl PE1
+
   lib entry: 10.1.1.0/24, rev 12, chkpt: none
         local binding:  label: imp-null (owner LDP)
+
   lib entry: 10.1.2.0/24, rev 14, chkpt: none
         local binding:  label: imp-null (owner LDP)
+
   lib entry: 10.1.3.0/24, rev 16, chkpt: none
         local binding:  label: imp-null (owner LDP)
+
   lib entry: 10.2.2.0/24, rev 18, chkpt: none
         local binding:  label: 17 (owner LDP)
+
   lib entry: 10.2.3.0/24, rev 20, chkpt: none
         local binding:  label: 19 (owner LDP)
-  lib entry: 10.10.10.0/24, rev 22, chkpt: none
-        no local binding
-  lib entry: 192.168.1.0/24, rev 21, chkpt: none
-        no local binding
 ```
 
-This is very granular. It's easy to break MPLS forwarding if you filter labels that downstream routers need,
-so be careful.
+Notice that P1 **still allocates local labels** for other FECs, but does not advertise them.
+
+Outbound advertisement filtering controls **label distribution**, not local label allocation.
+
+### Multiple Advertisement Rules
+
+You can configure multiple `mpls ldp advertise-labels for ... to ...` rules.
+
+If multiple prefix ACLs match the same FEC, IOS XE uses the **first matching advertisement rule in the running configuration**.
+
+The matching peer ACLs are not combined.
+
+Therefore, rule ordering matters when the prefix ACLs overlap.
+
+### Key Points
+
+- By default, locally allocated label bindings are advertised to all LDP peers.
+- `for <prefix-acl>` identifies which FECs the rule controls.
+- `to <peer-acl>` identifies which LDP router IDs are allowed to receive those FECs' labels.
+- With default advertisement enabled, unmatched FECs are still advertised to all peers.
+- `no mpls ldp advertise-labels` disables default advertisement; explicitly permitted advertisements can still occur.
+- The `for ... to ...` command **restricts where matching FECs are advertised**, not which FECs a matched peer can receive from other rules or default advertisements.
+- When multiple rules match a FEC, the first matching rule applies.
+- Outbound filtering does not prevent local label allocation.
+- Filtering labels needed by downstream LSRs can break MPLS forwarding, so verify the resulting label advertisements carefully.
 
 ---
 

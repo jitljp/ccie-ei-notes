@@ -367,7 +367,7 @@ This is less disruptive, but it can be confusing in labs because the command may
 
 ### With the `force` Keyword
 
-If you configure `mpls ldp router-id Loopback0 force`, the router tries to change the LDP router ID more immediately.
+If you configure `mpls ldp router-id Loopback0 force`, the router changes the LDP router ID immediately.
 
 Example:
 
@@ -405,7 +405,7 @@ LDP discovery: UDP 646
 LDP session:   TCP 646
 ```
 
-By default, the LDP transport address is usually the LDP router ID.
+By default, the LDP transport address is the LDP router ID.
 
 Example:
 
@@ -478,6 +478,9 @@ So the difference is:
 | :----------------------------------------------- | :---------------------------------------------------------------- |
 | `mpls ldp discovery transport-address <ip-address>` | Advertise the specified IP address as the transport address       |
 | `mpls ldp discovery transport-address interface` | Advertise the interface's own IP address as the transport address |
+
+> The transport address and RID don't have to be the same. The transport address is the IP address used for the LDP TCP session,
+> but neighbors still identify each other by RID.
 
 ---
 
@@ -699,6 +702,8 @@ LFIB = Label Forwarding Information Base
 The LIB contains label bindings learned from LDP.
 
 The LFIB is used to forward labeled packets.
+
+> The LIB/LFIB relationship is similar to the RIB/FIB relationship. LIB/RIB = control plane, FIB/LFIB = data plane.
 
 ```text
 LDP learns label bindings
@@ -1018,9 +1023,9 @@ The tradeoff is that label distribution may take longer, because advertisements 
 A simple MPLS/LDP core needs:
 
 ```text
-1. CEF
+1. CEF (enabled by default)
 2. IGP reachability
-3. MPLS enabled globally
+3. MPLS enabled globally (enabled by default)
 4. LDP selected as the label protocol (enabled by default)
 5. MPLS enabled on core-facing interfaces
 ```

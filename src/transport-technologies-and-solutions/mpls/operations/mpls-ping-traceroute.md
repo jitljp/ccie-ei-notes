@@ -555,11 +555,12 @@ which is especially useful if there are problems in the LSP.
 
 ---
 
+
 ## TTL Propagation and Normal Traceroute
 
 MPLS has its own TTL field.
 
-By default, IOS XE copies the IP TTL into the MPLS TTL when the label is pushed.
+By default, IOS XE copies the IP TTL into the MPLS TTL when an MPLS label is imposed.
 
 ```text
 IP TTL
@@ -569,9 +570,17 @@ MPLS TTL
 
 This is called **TTL propagation**.
 
-With TTL propagation enabled, a normal IP traceroute can show MPLS core routers.
+Each MPLS router decrements the MPLS TTL as the packet is forwarded. When the packet leaves the MPLS network, the remaining MPLS TTL is reflected in the IP TTL.
 
-Example from a CE1 to CE2:
+This behavior allows a normal IP traceroute to reveal the routers inside an MPLS core.
+
+For example, consider this topology:
+
+```text
+CE1 --- PE1 --- P1 --- P2 --- PE2 --- CE2
+```
+
+With TTL propagation enabled, a traceroute from CE1 to CE2 can show the MPLS core routers:
 
 ```text
 CE1# traceroute 11.11.11.1 source l0 numeric
@@ -582,65 +591,70 @@ VRF info: (vrf in name/id, vrf out name/id)
   2 10.1.1.2 [MPLS: Label 17 Exp 0] 2 msec 1 msec 1 msec
   3 10.1.2.2 [MPLS: Label 20 Exp 0] 2 msec 1 msec 2 msec
   4 10.2.2.2 1 msec 2 msec 1 msec
-  5 192.168.2.2 2 msec *  6 msec
+  5 192.168.2.2 2 msec * 6 msec
 ```
 
-This shows the path from CE1 → PE1 → P1 → P2 → PE2 → CE2.
-
-If TTL propagation is disabled, the MPLS core can be hidden from normal traceroute.
-
-Command:
+The traceroute reveals the full path:
 
 ```text
-no mpls ip propagate-ttl
+CE1 → PE1 → P1 → P2 → PE2 → CE2
 ```
 
-This hides the MPLS core from forwarded customer traffic but still allows locally generated provider traffic to reveal the MPLS core.
+### Disabling TTL Propagation
 
-Here's that same traceroute from CE1 to CE2 with TTL propagation disabled on PE1:
+Service providers can disable TTL propagation to prevent customer traceroutes from revealing the internal MPLS topology.
+
+For example:
 
 ```text
-CE1#traceroute 11.11.11.1 source l0 numeric
+PE1(config)# no mpls ip propagate-ttl forwarded
+```
+
+This disables TTL propagation for **forwarded packets**, such as customer traffic passing through the PE router.
+
+Instead of copying the IP TTL, the ingress PE initializes the MPLS TTL to **255**.
+
+```text
+Customer IP packet enters PE1
+  ↓
+IP TTL is not copied
+  ↓
+MPLS TTL starts at 255
+  ↓
+P routers decrement MPLS TTL
+  ↓
+Packet exits MPLS core
+```
+
+The MPLS TTL is still decremented at each MPLS hop, but it normally does not expire inside the core.
+
+With TTL propagation disabled for forwarded traffic, the previous traceroute becomes:
+
+```text
+CE1# traceroute 11.11.11.1 source l0 numeric
 Type escape sequence to abort.
 Tracing the route to 11.11.11.1
 VRF info: (vrf in name/id, vrf out name/id)
   1 192.168.1.1 1 msec 1 msec 0 msec
   2 10.2.2.2 3 msec 1 msec 2 msec
-  3 192.168.2.2 2 msec *  9 msec
+  3 192.168.2.2 2 msec * 9 msec
 ```
 
-This shows the path from CE1 → PE1 → PE2 → CE2.
+The P routers are no longer visible:
 
-With TTL propagation disabled the MPLS header uses TTL 255 by default, so the TTL doesn't expire as the messages
-traverse the MPLS core.
+```text
+CE1 → PE1 → PE2 → CE2
+```
 
-The P routers are hidden from the customer traceroute.
+The customer can still reach the destination, but the MPLS core appears as a single hop.
+
+Disabling TTL propagation for forwarded traffic does not prevent locally originated traffic from using TTL propagation. The service provider can still run traceroutes from PE routers to troubleshoot the MPLS core.
 
 ---
 
-### TTL propagation configuration options
+### TTL Propagation Configuration Options
 
-The command shown previously disables TTL propagation entirely:
-
-```text
-PE1(config)# no mpls ip propagate-ttl
-```
-
-With this configured, the IP TTL is not copied into the MPLS TTL when the label is pushed.
-
-Instead, the MPLS TTL starts at 255.
-
-```text
-IP packet enters MPLS core
-  ↓
-IP TTL is not copied
-  ↓
-MPLS TTL starts at 255
-```
-
-This hides the MPLS core from normal traceroute.
-
-There are also two optional keywords:
+IOS XE supports three forms of the command:
 
 ```text
 PE1(config)# no mpls ip propagate-ttl ?
@@ -649,47 +663,61 @@ PE1(config)# no mpls ip propagate-ttl ?
   <cr>       <cr>
 ```
 
-The `forwarded` keyword affects traffic forwarded through the router.
+**1. Disable TTL propagation for all traffic**
+
+```text
+PE1(config)# no mpls ip propagate-ttl
+```
+
+Disables TTL propagation for both forwarded and locally originated packets.
+
+**2. Disable TTL propagation for forwarded traffic**
 
 ```text
 PE1(config)# no mpls ip propagate-ttl forwarded
 ```
 
-This is commonly used by service providers.
+Disables TTL propagation only for packets forwarded through the router.
 
-It hides the MPLS core from customer traceroutes, but still allows traceroutes sourced from the PE router itself to show the MPLS core.
+This allows customer traceroutes to hide the MPLS core while provider traceroutes sourced from PE routers can still reveal it.
 
-```text
-Customer traceroute:
-CE1 → PE1 → PE2 → CE2
-
-Provider traceroute from PE1:
-PE1 → P1 → P2 → PE2
-```
-
-The `local` keyword affects traffic originated by the router itself.
+**3. Disable TTL propagation for locally originated traffic**
 
 ```text
 PE1(config)# no mpls ip propagate-ttl local
 ```
 
-This disables TTL propagation for locally generated traffic, such as traceroutes sourced from the PE router.
+Disables TTL propagation only for packets originated by the router itself.
 
-In summary:
+This affects traffic such as traceroutes sourced from the PE router.
 
-| Command                              | Effect                                                                    |
-| :----------------------------------- | :------------------------------------------------------------------------ |
-| `no mpls ip propagate-ttl`           | Disable TTL propagation for both forwarded and locally originated traffic |
-| `no mpls ip propagate-ttl forwarded` | Disable TTL propagation only for forwarded traffic                        |
-| `no mpls ip propagate-ttl local`     | Disable TTL propagation only for locally originated traffic               |
+### Configuration Summary
 
-For most MPLS service provider examples, the most common option is:
+| Command | Forwarded Traffic | Locally Originated Traffic |
+| --- | --- | --- |
+| `mpls ip propagate-ttl` (default) | Enabled | Enabled |
+| `no mpls ip propagate-ttl` | Disabled | Disabled |
+| `no mpls ip propagate-ttl forwarded` | Disabled | Enabled |
+| `no mpls ip propagate-ttl local` | Enabled | Disabled |
+
+For most service provider scenarios, the preferred configuration is:
 
 ```text
 no mpls ip propagate-ttl forwarded
 ```
 
-This hides the provider core from customer traceroutes while still allowing the provider to troubleshoot the MPLS core from PE routers.
+This hides the MPLS core from customer traceroutes while preserving TTL propagation for locally originated provider traffic.
+
+## Key Points
+
+- **TTL propagation is enabled by default** in IOS XE.
+- When enabled, the IP TTL is copied into the MPLS TTL when labels are imposed.
+- MPLS routers decrement the MPLS TTL regardless of whether TTL propagation is enabled.
+- When TTL propagation is disabled, the imposed MPLS TTL is initialized to **255**.
+- `no mpls ip propagate-ttl` disables propagation for both forwarded and locally originated traffic.
+- `no mpls ip propagate-ttl forwarded` disables propagation only for forwarded traffic.
+- `no mpls ip propagate-ttl local` disables propagation only for locally originated traffic.
+- Disabling TTL propagation for forwarded traffic can hide MPLS core routers from normal customer traceroutes.
 
 ---
 

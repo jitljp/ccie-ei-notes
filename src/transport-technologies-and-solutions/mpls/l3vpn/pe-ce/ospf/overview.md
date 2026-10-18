@@ -195,6 +195,15 @@ BGP IPv4 VRF address family
 VPNv4 export
 ```
 
+PE1 must also advertise routes learned from remote PEs into OSPF toward CE1.
+
+This requires redistribution from BGP into the VRF OSPF process:
+
+```text
+router ospf 10 vrf CUSTOMER_A
+ redistribute bgp 65000
+```
+
 ### PE2
 
 PE2 has the same basic structure.
@@ -224,16 +233,7 @@ router bgp 65000
   redistribute ospf 10
 ```
 
-PE2 must also advertise routes learned from remote PEs into OSPF toward CE2.
-
-This requires redistribution from BGP into the VRF OSPF process:
-
-```text
-router ospf 10 vrf CUSTOMER_A
- redistribute bgp 65000
-```
-
-The same is needed on PE1 so routes from CE2 can be advertised to CE1:
+And redistribute BGP into OSPF, like on PE1:
 
 ```text
 router ospf 10 vrf CUSTOMER_A
@@ -407,6 +407,7 @@ OSPF route type matters in L3VPN.
 A route learned from one CE and transported across the MPLS VPN may appear on another CE as:
 
 ```text
+O
 O IA
 O E1
 O E2

@@ -362,7 +362,7 @@ The customer packet is carried across the core without the P routers knowing cus
 
 In MPLS L3VPNs, VPNv4 routes usually use the remote PE loopback as the BGP next hop.
 
-> This concept was explained in the MPLS section.
+> This concept was explained in the MPLS operations section.
 
 Example:
 

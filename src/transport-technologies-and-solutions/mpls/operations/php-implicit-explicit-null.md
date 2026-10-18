@@ -583,8 +583,6 @@ PE2(config)# mpls ldp explicit-null
 
 This tells PE2 to advertise explicit null in situations where it would normally advertise implicit null.
 
-In a simple lab, this is usually enough.
-
 Example:
 
 ```text
@@ -629,7 +627,7 @@ On IOS XE, you can scope explicit null with ACLs.
 The general syntax is:
 
 ```text
-mpls ldp explicit-null [for <prefix-acl> | to <peer-acl> | for <prefix-acl> to <peer-acl>]
+mpls ldp explicit-null [for <prefix-acl> ] [to <peer-acl>]
 ```
 
 The keywords mean:
@@ -743,9 +741,9 @@ Customer IP packet
 
 Label 3 is not sent in the packet.
 
-Implicit null is advertised in the control plane.
+Implicit null is advertised in the control plane by LDP.
 
-The upstream router responds by popping the label.
+The upstream router receiving this label knows it means "pop the top label before forwarding labeled packets to me".
 
 ```text
 Control plane: label 3 is advertised.

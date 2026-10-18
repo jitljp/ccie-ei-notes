@@ -427,7 +427,7 @@ BGP IPv4 VRF table
 VPNv4 export
 ```
 
-So you normally do not need to redistribute the CE BGP route into BGP.
+So you do not need to redistribute the CE BGP route into BGP.
 
 It is already a BGP route.
 

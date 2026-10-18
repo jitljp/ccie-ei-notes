@@ -405,6 +405,7 @@ For external or NSSA routes, the PE may preserve external route information.
 Examples of route types a CE may see:
 
 ```text
+O
 O IA
 O E1
 O E2
@@ -452,15 +453,20 @@ Example loop risk:
 
 To prevent this, OSPF over MPLS L3VPN uses special loop prevention mechanisms.
 
-Important mechanisms:
+Important loop-prevention mechanisms:
 
 ```text
 Down Bit:
-Used mainly for routes advertised from the VPN into OSPF.
+Set by PEs in Type 3, 5, and 7 LSAs advertised toward CEs.
+Other PEs ignore these LSAs during route calculation,
+preventing routes from looping back into MP-BGP.
 
 Domain Tag:
-Used mainly for external OSPF routes.
+Set by PEs in Type 5 and 7 external LSAs.
+Other PEs reject routes whose external route tag matches
+their local domain tag, preventing routing loops.
 ```
+
 
 These mechanisms are covered in later pages.
 

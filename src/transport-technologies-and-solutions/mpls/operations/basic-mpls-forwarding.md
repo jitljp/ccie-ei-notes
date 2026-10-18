@@ -790,7 +790,7 @@ P routers do not need the full BGP table.
 
 ### Misunderstanding 3: The label represents the final destination prefix
 
-The label for the **BGP next hop**.
+The label is for the **BGP next hop**.
 
 Example:
 

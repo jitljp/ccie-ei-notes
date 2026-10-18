@@ -702,7 +702,7 @@ Route Distinguisher: 65000:3 (default for vrf CUSTOMER_A)
 ```
 
 This serves as a good reminder of the BGP best-path selection process, but I want PE2 and PE3 to both advertise a route to PE1, 
-so let's make the, advertise the CE2-CE3 link as well.
+so let's make them advertise the CE2-CE3 link as well.
 
 CE2 and CE3:
 
@@ -1165,7 +1165,7 @@ All PE-CE links connected to the same customer site should use the same SoO valu
 Different customer sites should use different SoO values.
 ```
 
-## Why SoO Is Important with AS-Override and Allowas-in
+## Why SoO Is soo Important with AS-Override and Allowas-in
 
 The previous page explained AS-Override and Allowas-in.
 

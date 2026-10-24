@@ -10,12 +10,12 @@ The network replicates the packet only where necessary to reach interested recei
 Unicast:
 
 Source
-  |
-  +---- copy 1 ----> Receiver 1
-  |
-  +---- copy 2 ----> Receiver 2
-  |
-  +---- copy 3 ----> Receiver 3
+|  | |
+|  | +---- copy 1 ----> Receiver 1
+|  |
+|  +---- copy 2 ----> Receiver 2
+|
++---- copy 3 ----> Receiver 3
 ```
 
 ```text

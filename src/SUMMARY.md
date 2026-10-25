@@ -4,7 +4,9 @@
 
 - [1.2 Routing Concepts](network-infrastructure/routing-concepts/overview.md)
 
-  - [1.2.d VRF-Lite](network-infrastructure/routing-concepts/vrf-lite/overview.md)
+- [1.2.d VRF-Lite](network-infrastructure/routing-concepts/vrf-lite/overview.md)
+  - [VRF-Lite Inter-Router Connectivity](network-infrastructure/routing-concepts/vrf-lite/inter-router.md)
+  - [EVN](network-infrastructure/routing-concepts/vrf-lite/evn.md)
 
   - [1.2.e VRF-Aware Routing with BGP, EIGRP, OSPF, and Static](network-infrastructure/routing-concepts/vrf-aware-routing/overview.md)
     - [VRF-Aware Static Routing](network-infrastructure/routing-concepts/vrf-aware-routing/static-routing.md)
@@ -16,13 +18,11 @@
 
   - [1.2.f Route Leaking Between VRFs Using Route Maps and VASI](network-infrastructure/routing-concepts/route-leaking/overview.md)
     - [Static VRF Route Leaking](network-infrastructure/routing-concepts/route-leaking/static-route-leaking.md)
-    - [Global-to-VRF Static Leaking](network-infrastructure/routing-concepts/route-leaking/global-vrf-static-leaking.md)
     - [Route-Target Import/Export](network-infrastructure/routing-concepts/route-leaking/route-target-import-export.md)
     - [Import and Export Maps](network-infrastructure/routing-concepts/route-leaking/import-export-maps.md)
-    - [Global-to-VRF BGP Prefix Import](network-infrastructure/routing-concepts/route-leaking/global-vrf-bgp-prefix-import.md)
+    - [Global-to-VRF Import and VRF-to-Global Export](network-infrastructure/routing-concepts/route-leaking/global-vrf-bgp-prefix-import.md)
     - [Route Replication](network-infrastructure/routing-concepts/route-leaking/route-replication.md)
     - [VASI](network-infrastructure/routing-concepts/route-leaking/vasi.md)
-
 
 - [1.6 Multicast](network-infrastructure/multicast/overview.md)
   - [IPv4 Multicast Addressing](network-infrastructure/multicast/ipv4-multicast-addressing.md)

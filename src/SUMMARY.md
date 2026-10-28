@@ -218,6 +218,32 @@
       - [6PE](transport-technologies-and-solutions/mpls/l3vpn/advanced/6pe.md)
       - [6VPE](transport-technologies-and-solutions/mpls/l3vpn/advanced/6vpe.md)
 
+- [3.3 DMVPN](transport-technologies-and-solutions/dmvpn/overview.md)
+  - [DMVPN Architecture and Components](transport-technologies-and-solutions/dmvpn/architecture.md)
+  - [NHRP Fundamentals](transport-technologies-and-solutions/dmvpn/nhrp-fundamentals.md)
+  - [DMVPN Phase 1](transport-technologies-and-solutions/dmvpn/phase1.md)
+  - [DMVPN Phase 2](transport-technologies-and-solutions/dmvpn/phase2.md)
+
+  - [3.3.a Troubleshoot DMVPN Phase 3 with Dual Hub](transport-technologies-and-solutions/dmvpn/phase3/overview.md)
+    - [Phase 3 Operation and Packet Forwarding](transport-technologies-and-solutions/dmvpn/phase3/operation.md)
+
+    - [3.3.a (i) NHRP](transport-technologies-and-solutions/dmvpn/phase3/nhrp/overview.md)
+      - [NHRP Redirects and Shortcuts](transport-technologies-and-solutions/dmvpn/phase3/nhrp/redirect-shortcut.md)
+      - [NHRP Verification and Troubleshooting](transport-technologies-and-solutions/dmvpn/phase3/nhrp/troubleshooting.md)
+
+    - [Routing over DMVPN Phase 3](transport-technologies-and-solutions/dmvpn/phase3/routing.md)
+    - [Dual-Hub DMVPN Topologies](transport-technologies-and-solutions/dmvpn/phase3/dual-hub/topologies.md)
+
+    - [3.3.a (ii) IPsec/IKEv2 Using Preshared Key](transport-technologies-and-solutions/dmvpn/phase3/ipsec/overview.md)
+      - [IKEv2 Negotiation and Preshared Key Authentication](transport-technologies-and-solutions/dmvpn/phase3/ipsec/ikev2.md)
+      - [IPsec ESP and Tunnel Protection](transport-technologies-and-solutions/dmvpn/phase3/ipsec/esp.md)
+      - [IKEv2/IPsec Configuration for DMVPN](transport-technologies-and-solutions/dmvpn/phase3/ipsec/configuration.md)
+      - [IKEv2/IPsec Verification and Troubleshooting](transport-technologies-and-solutions/dmvpn/phase3/ipsec/troubleshooting.md)
+
+    - [Dual-Hub Phase 3 Configuration](transport-technologies-and-solutions/dmvpn/phase3/dual-hub/configuration.md)
+    - [Dual-Hub Failover and Convergence](transport-technologies-and-solutions/dmvpn/phase3/dual-hub/failover.md)
+    - [End-to-End DMVPN Phase 3 Troubleshooting](transport-technologies-and-solutions/dmvpn/phase3/troubleshooting.md)
+
 
 # 4.0 Infrastructure Security and Services
 

@@ -436,7 +436,7 @@ Configure a second OSPF process in `VRF_B`. It runs on the R4-facing interface a
 R1(config)# interface g3
 R1(config-if)# ip ospf 20 area 0
 
-R1(config)# interface vasilright 100
+R1(config)# interface vasiright 100
 R1(config-if)# ip ospf 20 area 0
 ```
 

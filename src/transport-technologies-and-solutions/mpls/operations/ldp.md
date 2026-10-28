@@ -232,6 +232,29 @@ LDP session:
 - TCP 646
 ```
 
+### LDP Session Backoff
+
+The **LDP backoff mechanism** prevents routers from repeatedly attempting to establish an LDP session when session establishment fails.
+
+After a failed session establishment attempt, LDP delays the next attempt. The delay increases exponentially with successive failures, up to a configured maximum.
+
+The default values are:
+
+- **Initial backoff:** 15 seconds
+- **Maximum backoff:** 120 seconds
+
+The backoff timers can be configured globally:
+
+```text
+R1(config)# mpls ldp backoff 30 240
+```
+
+This sets the initial backoff to 30 seconds and the maximum to 240 seconds.
+
+The backoff mechanism is particularly useful when neighboring routers have incompatible LDP configurations.
+
+It is separate from the **LDP discovery hold time** and **LDP session hold time**, which are used to detect the loss of discovery adjacencies and established sessions, respectively.
+
 ---
 
 ## LDP Messages

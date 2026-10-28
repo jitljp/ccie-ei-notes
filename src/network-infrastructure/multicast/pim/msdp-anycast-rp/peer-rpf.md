@@ -1,5 +1,4 @@
 # MSDP Peer-RPF and Mesh Groups
-
 **MSDP Peer Reverse Path Forwarding (Peer-RPF)** prevents Source-Active (SA) messages from circulating endlessly between MSDP peers.
 
 When an MSDP speaker receives an SA message, it normally determines whether the message arrived from the correct MSDP peer for reaching the **originating RP**.
@@ -13,7 +12,6 @@ If the check fails, the SA message is discarded.
 Mesh groups are particularly useful for IPv4 Anycast RP deployments.
 
 ## MSDP Peer-RPF Overview
-
 Consider the following topology:
 
 ```text
@@ -52,7 +50,6 @@ In this example, the answer is yes.
 RP2 is directly peered with the originating RP, so the SA is accepted without requiring a BGP-based Peer-RPF lookup.
 
 ## MSDP Peer-RPF vs. Multicast Data-Plane RPF
-
 Although both mechanisms use the term RPF, they operate on different types of information.
 
 | Feature | Multicast Data-Plane RPF | MSDP Peer-RPF |
@@ -67,7 +64,6 @@ For example:
 
 ```text
 MSDP SA:
-
 Originating RP: 10.0.0.1
 Source:         192.0.2.10
 Group:          239.1.1.1
@@ -86,7 +82,6 @@ This is an important distinction.
 The multicast source address is used later when the receiving RP performs an ordinary RPF lookup to establish an `(S,G)` source tree.
 
 ## Why Peer-RPF Is Necessary
-
 Consider three MSDP speakers:
 
 ```text
@@ -137,7 +132,6 @@ RP3 accepts the SA received directly from RP1 and rejects the copy forwarded by 
 **Peer-RPF is performed relative to the originating RP, not merely the peer that most recently forwarded the SA.**
 
 ## MSDP Peer-RPF Selection
-
 MSDP needs to determine the correct peer from which to accept SA messages originated by a particular RP.
 
 RFC 3618 defines an ordered set of Peer-RPF selection rules.
@@ -157,7 +151,6 @@ The rules are evaluated in order, using the first applicable rule.
 Only MSDP peers in the **ESTABLISHED** state are eligible for Peer-RPF selection.
 
 ### Direct Peering with the Originating RP
-
 The simplest case occurs when the receiving router is directly MSDP-peered with the RP that originated the SA.
 
 For example:
@@ -188,7 +181,6 @@ Therefore, RP2 accepts the message.
 This is particularly important for a simple two-RP Anycast RP deployment.
 
 ### Peer-RPF Using Routing Information
-
 When the sending MSDP peer is not the originating RP, the receiving router may need routing information to determine which peer lies on the correct path toward the originator.
 
 For example:
@@ -215,7 +207,6 @@ However, BGP is **not inherently required for IPv4 Anycast RP**.
 Direct peering exceptions and MSDP mesh groups allow Anycast RP to operate using ordinary IGP reachability.
 
 ## IOS XE Peer-RPF Exceptions
-
 Cisco IOS XE documents several cases in which the normal BGP-based Peer-RPF check is bypassed.
 
 | Condition | Behavior |
@@ -228,7 +219,6 @@ Cisco IOS XE documents several cases in which the normal BGP-based Peer-RPF chec
 SA filters and other MSDP validation rules still apply.
 
 ### Two-RP Anycast Deployment
-
 For the original topology:
 
 ```text
@@ -259,8 +249,100 @@ Neither `ip msdp default-peer` nor a mesh group is required for this simple two-
 
 > **Important:** Having an established MSDP session does not universally disable Peer-RPF. These exceptions apply under specific conditions. Adding more peers can change which Peer-RPF rules are relevant.
 
-## MSDP Mesh Groups
+## MSDP Default Peers
 
+A **default MSDP peer** is an explicitly selected peer from which a router accepts Source-Active (SA) messages **without performing the normal Peer-RPF check**. This is useful when the MSDP topology does not follow BGP routing information, such as when a stub multicast domain connects to one or more upstream domains.
+
+A default peer does not replace the MSDP TCP session. The peer must already be configured using `ip msdp peer`.
+
+Syntax:
+
+```text
+ip msdp default-peer <peer-address> [prefix-list <name>]
+```
+
+If a router has **only one configured MSDP peer**, it automatically accepts that peer as the default for Peer-RPF purposes. In that case, `ip msdp default-peer` is unnecessary.
+
+### Configuring a Default Peer
+
+Suppose RP3 has MSDP sessions with RP1 (`10.0.0.1`) and RP2 (`10.0.0.2`), but should use RP1 as its default peer:
+
+```text
+RP3(config)# ip msdp peer 10.0.0.1 connect-source Loopback1
+RP3(config)# ip msdp peer 10.0.0.2 connect-source Loopback1
+RP3(config)# ip msdp default-peer 10.0.0.1
+```
+
+RP3 can accept SA messages received from RP1 without the normal Peer-RPF check, including SAs that RP1 forwarded on behalf of other originating RPs.
+
+**Default-peer status affects SA acceptance, not the selection of the unicast or multicast forwarding path.** SA filters and other MSDP checks still apply.
+
+### Multiple Default Peers Without Prefix Lists
+
+Multiple default peers can provide **primary/backup** behavior.
+
+For example, assuming the MSDP sessions are already configured:
+
+```text
+RP3(config)# ip msdp default-peer 10.0.0.1
+RP3(config)# ip msdp default-peer 10.0.0.2
+```
+
+- RP1 (`10.0.0.1`) is the active default peer while its session is available because it was configured first.
+- RP2 (`10.0.0.2`) becomes the active default peer if RP1 or its connectivity fails.
+- When RP1 is active, RP2 is not treated as an active *default peer*. Other normal Peer-RPF acceptance rules can still apply to SAs received from RP2.
+
+**Without prefix lists, only one configured default peer is active at a time.**
+
+### Multiple Default Peers With Prefix Lists
+
+The optional `prefix-list` restricts default-peer treatment according to the **originating RP address carried in the SA message**.
+
+It does **not** match the multicast source address or multicast group address.
+
+When prefix lists are associated with multiple default peers, those peers can be **active simultaneously for different originating RP prefixes**.
+
+For example, RP3 receives SAs through two upstream MSDP peers:
+
+- RP1 (`10.0.0.1`) forwards SAs originated by `10.10.10.10`.
+- RP2 (`10.0.0.2`) forwards SAs originated by `10.20.20.20`.
+
+Configure RP3:
+
+```text
+RP3(config)# ip prefix-list RP1-ORIGINATORS permit 10.10.10.10/32
+RP3(config)# ip prefix-list RP2-ORIGINATORS permit 10.20.20.20/32
+!
+RP3(config)# ip msdp default-peer 10.0.0.1 prefix-list RP1-ORIGINATORS
+RP3(config)# ip msdp default-peer 10.0.0.2 prefix-list RP2-ORIGINATORS
+```
+
+Assuming both MSDP sessions are established:
+
+| SA Originating RP | Sending MSDP Peer | Default-Peer Acceptance |
+|---|---|---|
+| `10.10.10.10` | `10.0.0.1` | Accepted without normal Peer-RPF |
+| `10.20.20.20` | `10.0.0.2` | Accepted without normal Peer-RPF |
+| `10.20.20.20` | `10.0.0.1` | Not covered by RP1's default-peer prefix list |
+
+The third example does not automatically mean the SA is rejected. It means the **default-peer exception does not apply**; normal Peer-RPF rules and other checks determine acceptance.
+
+### Default Peers vs. Mesh Groups
+
+Both features can bypass normal Peer-RPF checks, but they serve different purposes:
+
+| Feature | Typical Use | Key Behavior |
+|---|---|---|
+| Default peers | Stub or hub-and-spoke MSDP connectivity without BGP-based Peer-RPF | Accept SAs from selected peers, optionally restricted by originating RP prefix |
+| Mesh groups | Fully meshed MSDP speakers, especially Anycast RPs | Accept SAs from mesh-group members without normal Peer-RPF and suppress forwarding those SAs to other group members |
+
+Unlike mesh groups, **default peers do not introduce mesh-group SA forwarding suppression**.
+
+For multiple fully meshed Anycast RPs, mesh groups are generally the better choice.
+
+---
+
+## MSDP Mesh Groups
 An **MSDP Mesh Group** is a group of MSDP speakers that maintain a full mesh of MSDP peering relationships.
 
 Every member must have an MSDP peering session with every other member.
@@ -273,14 +355,13 @@ Mesh groups provide two important benefits:
 Mesh groups are particularly useful when multiple Anycast RPs operate within the same multicast domain.
 
 ### Full-Mesh Requirement
-
 Consider three RPs:
 
 ```text
           RP1
-         /   \
-        /     \
-       /       \
+         /   \\
+        /     \\
+       /       \\
       RP2 ----- RP3
 ```
 
@@ -301,14 +382,13 @@ The peering sessions must first be configured using `ip msdp peer`.
 The `ip msdp mesh-group` command then identifies which existing MSDP peers belong to the group.
 
 ### SA Reception from a Mesh-Group Member
-
 Suppose RP1 originates an SA message.
 
 Because RP1 is peered with both RP2 and RP3, it sends the SA directly to each:
 
 ```text
 RP1 ---- SA ----> RP2
-  \
+  \\
    \----- SA ---> RP3
 ```
 
@@ -326,7 +406,6 @@ Therefore:
 There is no need for that additional flooding because RP1 already sent the advertisement to both routers.
 
 ### Mesh-Group Forwarding Rules
-
 RFC 3618 defines two important cases.
 
 **Case 1: SA Received from a Peer in the Same Mesh Group**
@@ -390,7 +469,6 @@ RP1 and RP3 accept the SA from RP2 because RP2 belongs to their mesh group.
 However, neither forwards that SA to the other mesh-group members.
 
 ### Mesh-Group Forwarding Summary
-
 | SA Received From | Peer-RPF Check | Forward to Other Mesh Members? | Forward Outside Mesh Group? |
 |---|---|---|---|
 | Member of same mesh group | Bypassed | No | Yes, if permitted |
@@ -399,7 +477,6 @@ However, neither forwards that SA to the other mesh-group members.
 **Mesh groups control SA reception and flooding. They do not synchronize PIM multicast routing tables or replace normal multicast data-plane RPF checks.**
 
 ## IOS XE Mesh-Group Configuration
-
 The IOS XE command syntax is:
 
 ```text
@@ -414,7 +491,6 @@ ip msdp mesh-group <name> <peer-address>
 The command is configured separately for each peer belonging to the group.
 
 ### Two-RP Mesh Group
-
 A mesh group can be configured with only RP1 and RP2, although it is not necessary for basic two-RP Anycast operation.
 
 On RP1:
@@ -436,7 +512,6 @@ SA messages exchanged between them bypass normal Peer-RPF checking.
 Because there are only two members, the rule preventing forwarding to other members has little practical effect.
 
 ### Three-RP Mesh Group
-
 Now extend the Anycast RP design to include RP3:
 
 | RP | Anycast Address | Unique MSDP Address |
@@ -455,7 +530,6 @@ Each RP uses its unique MSDP address for peering and as its SA Originator ID.
 RP1(config)# ip msdp peer 10.0.0.2 connect-source Loopback1
 RP1(config)# ip msdp peer 10.0.0.3 connect-source Loopback1
 RP1(config)# ip msdp originator-id Loopback1
-
 RP1(config)# ip msdp mesh-group ANYCAST-RPS 10.0.0.2
 RP1(config)# ip msdp mesh-group ANYCAST-RPS 10.0.0.3
 ```
@@ -466,7 +540,6 @@ RP1(config)# ip msdp mesh-group ANYCAST-RPS 10.0.0.3
 RP2(config)# ip msdp peer 10.0.0.1 connect-source Loopback1
 RP2(config)# ip msdp peer 10.0.0.3 connect-source Loopback1
 RP2(config)# ip msdp originator-id Loopback1
-
 RP2(config)# ip msdp mesh-group ANYCAST-RPS 10.0.0.1
 RP2(config)# ip msdp mesh-group ANYCAST-RPS 10.0.0.3
 ```
@@ -477,7 +550,6 @@ RP2(config)# ip msdp mesh-group ANYCAST-RPS 10.0.0.3
 RP3(config)# ip msdp peer 10.0.0.1 connect-source Loopback1
 RP3(config)# ip msdp peer 10.0.0.2 connect-source Loopback1
 RP3(config)# ip msdp originator-id Loopback1
-
 RP3(config)# ip msdp mesh-group ANYCAST-RPS 10.0.0.1
 RP3(config)# ip msdp mesh-group ANYCAST-RPS 10.0.0.2
 ```
@@ -493,7 +565,6 @@ Each RP:
 - Does not forward SAs received from one mesh-group member to another member.
 
 ### Remove a Peer from a Mesh Group
-
 For example, remove RP3 from RP1's mesh group:
 
 ```text
@@ -513,9 +584,7 @@ RP1(config)# no ip msdp peer 10.0.0.3
 Mesh-group membership and MSDP peering are separate configuration elements.
 
 ## Mesh-Group Design Considerations
-
 ### Full-Mesh Connectivity Is Required
-
 Every mesh-group member must have MSDP peering with every other member.
 
 For example, the following is not a complete mesh:
@@ -538,7 +607,6 @@ For example:
 **An incomplete mesh can prevent multicast sources from being discovered by all RPs.**
 
 ### Mesh Groups Do Not Replace MSDP Peering
-
 The command:
 
 ```text
@@ -554,7 +622,6 @@ ip msdp peer 10.0.0.2 connect-source Loopback1
 ```
 
 ### Mesh Groups Do Not Bypass SA Filters
-
 Mesh-group membership bypasses the normal Peer-RPF check.
 
 It does not bypass configured SA filtering policies.
@@ -568,59 +635,13 @@ RP2(config)# ip msdp sa-filter in 10.0.0.1
 This blocks all incoming SA messages from RP1, even if RP1 belongs to the same mesh group.
 
 ### Mesh Groups Do Not Replace Unicast Routing
-
 Each member still needs unicast reachability to the other members' unique MSDP addresses.
 
 The shared Anycast RP address must also remain reachable throughout the multicast domain.
 
 These are separate requirements.
 
-## Default MSDP Peers
-
-IOS XE also provides the **`ip msdp default-peer`** command as another method of accepting SA messages without normal Peer-RPF checking.
-
-The syntax is:
-
-```text
-ip msdp default-peer <peer-address> [prefix-list <name>]
-```
-
-The specified MSDP peer must already be configured using `ip msdp peer`.
-
-For example, on RP2:
-
-```text
-RP2(config)# ip msdp peer 10.0.0.1 connect-source Loopback1
-RP2(config)# ip msdp default-peer 10.0.0.1
-```
-
-RP2 accepts SA messages from RP1 without performing normal Peer-RPF checks.
-
-This is useful in certain MSDP deployments without BGP.
-
-### Multiple Default Peers
-
-IOS XE allows multiple default peers to be configured.
-
-Without prefix lists, only one default peer is active at a time.
-
-For example:
-
-```text
-RP3(config)# ip msdp default-peer 10.0.0.1
-RP3(config)# ip msdp default-peer 10.0.0.2
-```
-
-RP3 uses the first available default peer for receiving SA messages.
-
-If that peer becomes unavailable, another configured default peer can be selected.
-
-The optional `prefix-list` allows default-peer selection to be restricted to particular originating RP prefixes, enabling more specific policies.
-
-**For an Anycast RP deployment with multiple fully meshed RPs, mesh groups are generally preferred over relying on default peers.**
-
 ## RFC 3618 Peer-RPF Compliance
-
 IOS XE supports enabling the Peer-RPF forwarding rules defined by RFC 3618.
 
 Configure:
@@ -640,7 +661,6 @@ For example, when the route toward an originating RP is learned through OSPF, th
 However, this feature is not normally required for a simple two-RP Anycast deployment or a fully meshed Anycast RP group.
 
 ### Verify the Selected RPF Peer
-
 IOS XE provides the following command:
 
 ```text
@@ -660,9 +680,7 @@ Use the **unique originating RP address**, not the shared Anycast RP address.
 The command is particularly useful when troubleshooting Peer-RPF selection in deployments using multiple MSDP peers without mesh-group exceptions.
 
 ## IOS XE Verification
-
 ### Verify MSDP Peer Status
-
 ```text
 RP1# show ip msdp summary
 ```
@@ -679,7 +697,6 @@ For the three-RP mesh group, RP1 should have active sessions with:
 Repeat the verification on RP2 and RP3.
 
 ### Verify Mesh-Group Membership
-
 Check the running configuration:
 
 ```text
@@ -705,7 +722,6 @@ RP1# show ip msdp peer 10.0.0.3
 Check the peer status and any displayed mesh-group information.
 
 ### Verify SA Reception
-
 On RP2:
 
 ```text
@@ -724,7 +740,6 @@ Peer:           10.0.0.1
 In a mesh group, each RP should learn active sources originated by the other RPs.
 
 ### Verify SA Counters
-
 ```text
 RP1# show ip msdp count
 ```
@@ -734,7 +749,6 @@ This displays SA state counters associated with MSDP peers.
 Compare the counters on the different RPs to confirm that source advertisements are reaching the expected peers.
 
 ### Verify Multicast Forwarding
-
 Finally, check PIM multicast routing state:
 
 ```text
@@ -748,7 +762,6 @@ Remember that **successful SA reception does not guarantee successful multicast 
 The source tree also requires valid PIM state and data-plane RPF.
 
 ## Troubleshooting Peer-RPF and Mesh Groups
-
 | Problem | Possible Cause |
 |---|---|
 | MSDP peer established but SA rejected | Peer-RPF failure or SA filtering |
@@ -762,7 +775,6 @@ The source tree also requires valid PIM state and data-plane RPF.
 | SA cache contains source but multicast fails | PIM Join, data-plane RPF, or multicast forwarding problem |
 
 ### Troubleshooting Sequence
-
 A useful troubleshooting sequence is:
 
 1. Verify the MSDP TCP peering sessions using `show ip msdp summary`.
@@ -782,7 +794,6 @@ The most important distinction is between:
 These are separate operations.
 
 ## Key Points
-
 - **MSDP Peer-RPF** prevents SA message flooding loops.
 - Peer-RPF evaluates the **originating RP address carried in the SA**, not the multicast source address.
 - Normal Peer-RPF selection identifies the correct MSDP peer from which to accept SAs originated by a particular RP.
@@ -795,14 +806,15 @@ These are separate operations.
 - **`ip msdp mesh-group <name> <peer-address>`** assigns a configured peer to a mesh group.
 - Mesh-group configuration does not automatically establish MSDP TCP sessions.
 - Mesh-group membership does not bypass configured SA filters or normal multicast data-plane RPF.
-- **`ip msdp default-peer`** allows SA acceptance from a designated peer without normal Peer-RPF checks.
+- **`ip msdp default-peer`** accepts SAs from a selected peer without normal Peer-RPF checks.
+- Without prefix lists, multiple default peers provide primary/backup behavior; with prefix lists, multiple peers can be active for different originating RP prefixes.
+- The default-peer prefix list matches the **originating RP address** in the SA message, not the multicast source or group.
 - **`ip msdp rpf rfc3618`** enables RFC 3618 Peer-RPF rules, including support for IGP-based selection.
 - Use `show ip msdp rpf-peer <rp-address>` to examine the selected MSDP RPF peer.
 - For a basic two-RP Anycast deployment, a mesh group is optional. For deployments with three or more RPs, a full-mesh MSDP configuration with mesh groups is generally preferred.
 
 ## References
-
 - [RFC 3618, Section 10: MSDP Peer-RPF Forwarding](https://www.rfc-editor.org/rfc/rfc3618.html#section-10)
 - [RFC 3618, Section 10.2: MSDP Mesh-Group Semantics](https://www.rfc-editor.org/rfc/rfc3618.html#section-10.2)
 - [RFC 3446: Anycast RP Mechanism Using PIM and MSDP](https://www.rfc-editor.org/rfc/rfc3446)
-- [Cisco IOS XE: Using MSDP to Interconnect Multiple PIM-SM Domains](https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/ip-multicast/b-ip-multicast/m_imc_msdp_im_pim_sim.html)
+- [Cisco IOS XE: Using MSDP to Interconnect Multiple PIM-SM Domains](https://www.cisco.com/c/en/us/td/docs/routers/ios-xe/ip-multicast/ip-multicast/m_imc_msdp_im_pim_sim.html)

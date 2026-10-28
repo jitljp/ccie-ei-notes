@@ -154,6 +154,15 @@
 
 # 3.0 Transport Technologies and Solutions
 
+- [3.1 Static Point-to-Point GRE Tunnels](transport-technologies-and-solutions/gre/overview.md)
+  - [GRE Encapsulation and Packet Forwarding](transport-technologies-and-solutions/gre/encapsulation.md)
+  - [Point-to-Point GRE Configuration](transport-technologies-and-solutions/gre/configuration.md)
+  - [GRE Tunnels for IPv6 over IPv4](transport-technologies-and-solutions/gre/ipv6-over-ipv4.md)
+  - [Routing over GRE Tunnels](transport-technologies-and-solutions/gre/routing.md)
+  - [GRE Tunnel State and Keepalives](transport-technologies-and-solutions/gre/keepalives.md)
+  - [GRE MTU, Fragmentation, and MSS](transport-technologies-and-solutions/gre/mtu-mss.md)
+  - [GRE Tunnels and VRFs](transport-technologies-and-solutions/gre/vrf.md)
+
 - [3.2 MPLS](transport-technologies-and-solutions/mpls/overview.md)
 
   - [3.2.a Operations](transport-technologies-and-solutions/mpls/operations/overview.md)
@@ -236,5 +245,17 @@
     - [AAA Accounting](infrastructure-security-and-services/device-security/aaa/accounting.md)
     - [AAA Server Failover and Local Fallback](infrastructure-security-and-services/device-security/aaa/failover.md)
     - [Complete AAA Configuration](infrastructure-security-and-services/device-security/aaa/configuration.md)
+
+
+- [4.2 Network Security](infrastructure-security-and-services/network-security/overview.md)
+
+  - [4.2.a Switch Security Features](infrastructure-security-and-services/network-security/switch-security/overview.md)
+
+    - [Private VLANs](infrastructure-security-and-services/network-security/switch-security/private-vlans/overview.md)
+      - [Primary and Secondary VLANs](infrastructure-security-and-services/network-security/switch-security/private-vlans/vlan-types.md)
+      - [PVLAN Port Types and Forwarding Rules](infrastructure-security-and-services/network-security/switch-security/private-vlans/port-types.md)
+      - [Private VLAN Configuration](infrastructure-security-and-services/network-security/switch-security/private-vlans/configuration.md)
+      - [Private VLAN Trunks](infrastructure-security-and-services/network-security/switch-security/private-vlans/trunks.md)
+      - [Layer 3 Connectivity with Private VLANs](infrastructure-security-and-services/network-security/switch-security/private-vlans/layer3.md)
 
 # 5.0 Infrastructure Automation and Programmability

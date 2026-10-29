@@ -229,7 +229,6 @@
 
     - [3.3.a (i) NHRP](transport-technologies-and-solutions/dmvpn/phase3/nhrp/overview.md)
       - [NHRP Redirects and Shortcuts](transport-technologies-and-solutions/dmvpn/phase3/nhrp/redirect-shortcut.md)
-      - [NHRP Verification and Troubleshooting](transport-technologies-and-solutions/dmvpn/phase3/nhrp/troubleshooting.md)
 
     - [Routing over DMVPN Phase 3](transport-technologies-and-solutions/dmvpn/phase3/routing.md)
     - [Dual-Hub DMVPN Topologies](transport-technologies-and-solutions/dmvpn/phase3/dual-hub/topologies.md)

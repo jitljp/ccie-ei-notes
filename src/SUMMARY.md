@@ -232,6 +232,8 @@
 
     - [Routing over DMVPN Phase 3](transport-technologies-and-solutions/dmvpn/phase3/routing.md)
     - [Dual-Hub DMVPN Topologies](transport-technologies-and-solutions/dmvpn/phase3/dual-hub/topologies.md)
+    - [Dual-Hub Phase 3 Configuration](transport-technologies-and-solutions/dmvpn/phase3/dual-hub/configuration.md)
+    - [Dual-Hub Failover and Convergence](transport-technologies-and-solutions/dmvpn/phase3/dual-hub/failover.md)
 
     - [3.3.a (ii) IPsec/IKEv2 Using Preshared Key](transport-technologies-and-solutions/dmvpn/phase3/ipsec/overview.md)
       - [IKEv2 Negotiation and Preshared Key Authentication](transport-technologies-and-solutions/dmvpn/phase3/ipsec/ikev2.md)
@@ -239,8 +241,6 @@
       - [IKEv2/IPsec Configuration for DMVPN](transport-technologies-and-solutions/dmvpn/phase3/ipsec/configuration.md)
       - [IKEv2/IPsec Verification and Troubleshooting](transport-technologies-and-solutions/dmvpn/phase3/ipsec/troubleshooting.md)
 
-    - [Dual-Hub Phase 3 Configuration](transport-technologies-and-solutions/dmvpn/phase3/dual-hub/configuration.md)
-    - [Dual-Hub Failover and Convergence](transport-technologies-and-solutions/dmvpn/phase3/dual-hub/failover.md)
     - [End-to-End DMVPN Phase 3 Troubleshooting](transport-technologies-and-solutions/dmvpn/phase3/troubleshooting.md)
 
 

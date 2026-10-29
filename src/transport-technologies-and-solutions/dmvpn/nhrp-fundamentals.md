@@ -17,7 +17,7 @@ NHRP works with two different address spaces:
 | **Overlay (protocol) address** | Identifies a router within the DMVPN tunnel network; may be used as a routing next hop. | `172.16.0.12` |
 | **NBMA address** | Identifies the transport endpoint to which an encapsulated packet must be delivered across the underlay. | `198.51.100.13` |
 
-**NBMA** stands for **Non-Broadcast Multiple Access**. In DMVPN, the NBMA address is normally the tunnel source's WAN/underlay address. Although the underlay itself may consist of ordinary Ethernet and IP links, *NBMA* is the terminology NHRP uses for the underlying transport network.
+**NBMA** stands for **Non-Broadcast Multiple Access**. In DMVPN, the NBMA address is normally the tunnel source's WAN/underlay address. Although the underlay itself may consist of ordinary Ethernet and IP links, **NBMA** is the terminology NHRP uses for the underlying transport network.
 
 For example, Spoke2 might use:
 
@@ -57,8 +57,8 @@ The terms **hub** and **spoke** describe the DMVPN topology. **NHS** and **NHC**
                      NHS
                       |
                DMVPN overlay
-                /     |     \
-               /      |      \
+                /     |     \\
+               /      |      \\
            Spoke1   Spoke2   Spoke3
             NHC      NHC      NHC
 ```
@@ -79,11 +79,9 @@ Consider Hub1 and Spoke1:
 Hub1:
   Tunnel0:      172.16.0.1
   NBMA:         198.51.100.1
-
 Spoke1:
   Tunnel0:      172.16.0.11
   NBMA:         198.51.100.9
-
 Spoke1                         Hub1 (NHS)
    |                              |
    |--- NHRP Registration Req --->|
@@ -113,6 +111,34 @@ At the hub, the resulting information is conceptually:
 
 These are **dynamic NHRP mappings**, not manually configured static mappings on the hub.
 
+### Unique Registrations and Changing NBMA Addresses
+
+An NHRP registration normally identifies a unique protocol address. In traditional configurations, the **unique** flag prevents a new registration with the same overlay address but a different NBMA address from silently replacing the existing entry.
+
+This can be useful for detecting two routers accidentally configured with the same tunnel IP address.
+
+However, it can cause difficulties when a spoke's WAN address legitimately changes. Suppose:
+
+```text
+Original registration:
+  172.16.0.11 -> 198.51.100.9
+Spoke's WAN address changes:
+  172.16.0.11 -> new NBMA address
+```
+
+With a unique registration, the NHS may reject the replacement mapping while the previous registration remains valid.
+
+The spoke can allow its registration to replace an existing mapping with a different NBMA address:
+
+```cisco
+interface Tunnel0
+ ip nhrp registration no-unique
+```
+
+This is especially relevant to dynamic WAN addressing. Cisco's NHRP smart defaults also enable `registration no-unique` automatically in supported implementations.
+
+**Do not confuse `registration no-unique` with allowing duplicate overlay addresses.** Overlay tunnel addresses should still be unique per DMVPN cloud; the command changes how the NHS treats a replacement NBMA mapping for the same overlay address.
+
 ### Registration and Tunnel State Are Different
 
 A tunnel interface can appear `up/up` even when NHRP registration has failed. An mGRE interface does not prove that an NHS is reachable merely because its line protocol is up.
@@ -139,7 +165,6 @@ For example, suppose Spoke1 wants to reach Spoke2's LAN:
 ```text
 Spoke1 route:
   10.12.12.0/24 -> 172.16.0.12 (Spoke2 Tunnel0)
-
 Spoke1 currently has no NHRP mapping for 172.16.0.12.
 ```
 
@@ -293,7 +318,7 @@ The underlay does not need to run a multicast routing protocol to carry these re
 
 **Multicast replication destinations are not learned merely because a spoke has a unicast NHRP entry for another spoke.** In typical DMVPN, spokes direct multicast toward configured NHSs; the NHS learns registered spoke endpoints for multicast replication.
 
-> On some IOS XE releases, including releases using NHRP smart defaults, dynamic multicast mapping can be enabled automatically. The explicit command remains useful for understanding and documenting the intended behavior.
+\> On some IOS XE releases, including releases using NHRP smart defaults, dynamic multicast mapping can be enabled automatically. The explicit command remains useful for understanding and documenting the intended behavior.
 
 ### Verifying Multicast Mappings
 
@@ -449,37 +474,6 @@ Do not assume that **IPsec SA lifetime = NHRP cache lifetime**. The protocols ma
 
 ---
 
-## Unique Registrations and Changing NBMA Addresses
-
-An NHRP registration normally identifies a unique protocol address. In traditional configurations, the **unique** flag prevents a new registration with the same overlay address but a different NBMA address from silently replacing the existing entry.
-
-This can be useful for detecting two routers accidentally configured with the same tunnel IP address.
-
-However, it can cause difficulties when a spoke's WAN address legitimately changes. Suppose:
-
-```text
-Original registration:
-  172.16.0.11 -> 198.51.100.9
-
-Spoke's WAN address changes:
-  172.16.0.11 -> new NBMA address
-```
-
-With a unique registration, the NHS may reject the replacement mapping while the previous registration remains valid.
-
-The spoke can allow its registration to replace an existing mapping with a different NBMA address:
-
-```cisco
-interface Tunnel0
- ip nhrp registration no-unique
-```
-
-This is especially relevant to dynamic WAN addressing. Cisco's NHRP smart defaults also enable `registration no-unique` automatically in supported implementations.
-
-**Do not confuse `registration no-unique` with allowing duplicate overlay addresses.** Overlay tunnel addresses should still be unique per DMVPN cloud; the command changes how the NHS treats a replacement NBMA mapping for the same overlay address.
-
----
-
 ## NHRP with Multiple NHSs
 
 A spoke may register with more than one NHS. In the chapter's dual-hub **single-cloud** design, the spoke has one mGRE interface and two NHSs:
@@ -488,7 +482,7 @@ A spoke may register with more than one NHS. In the chapter's dual-hub **single-
                       Hub1 (NHS)
                      /
 Spoke1 Tunnel0 -----+
-                     \
+                     \\
                       Hub2 (NHS)
 ```
 

@@ -239,9 +239,8 @@
       - [IKEv2 Negotiation and Preshared Key Authentication](transport-technologies-and-solutions/dmvpn/phase3/ipsec/ikev2.md)
       - [IPsec ESP and Tunnel Protection](transport-technologies-and-solutions/dmvpn/phase3/ipsec/esp.md)
       - [IKEv2/IPsec Configuration for DMVPN](transport-technologies-and-solutions/dmvpn/phase3/ipsec/configuration.md)
-      - [IKEv2/IPsec Verification and Troubleshooting](transport-technologies-and-solutions/dmvpn/phase3/ipsec/troubleshooting.md)
 
-    - [End-to-End DMVPN Phase 3 Troubleshooting](transport-technologies-and-solutions/dmvpn/phase3/troubleshooting.md)
+    - [Complete DMVPN Phase 3 Configuration](transport-technologies-and-solutions/dmvpn/phase3/complete_config.md)
 
 
 # 4.0 Infrastructure Security and Services

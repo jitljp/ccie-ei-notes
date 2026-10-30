@@ -274,6 +274,13 @@
 - [4.2 Network Security](infrastructure-security-and-services/network-security/overview.md)
 
   - [4.2.a Switch Security Features](infrastructure-security-and-services/network-security/switch-security/overview.md)
+    - [4.2.a (i) VACL and PACL](infrastructure-security-and-services/network-security/switch-security/vacl-pacl.md)
+    - [4.2.a (ii) Storm Control](infrastructure-security-and-services/network-security/switch-security/storm-control.md)
+    - [4.2.a (iii) DHCP Snooping and DHCP Option 82](infrastructure-security-and-services/network-security/switch-security/dhcp-snooping/overview.md)
+      - [DHCP Option 82](infrastructure-security-and-services/network-security/switch-security/dhcp-snooping/option82.md)
+    - [4.2.a (iv) IP Source Guard](infrastructure-security-and-services/network-security/switch-security/ip-source-guard.md)
+    - [4.2.a (v) Dynamic ARP Inspection](infrastructure-security-and-services/network-security/switch-security/dynamic-arp-inspection.md)
+    - [4.2.a (vi) Port Security](infrastructure-security-and-services/network-security/switch-security/port-security.md)
 
     - [Private VLANs](infrastructure-security-and-services/network-security/switch-security/private-vlans/overview.md)
       - [Primary and Secondary VLANs](infrastructure-security-and-services/network-security/switch-security/private-vlans/vlan-types.md)

@@ -289,4 +289,10 @@
       - [Private VLAN Trunks](infrastructure-security-and-services/network-security/switch-security/private-vlans/trunks.md)
       - [Layer 3 Connectivity with Private VLANs](infrastructure-security-and-services/network-security/switch-security/private-vlans/layer3.md)
 
+  - [4.2.b Router Security Features](infrastructure-security-and-services/network-security/router-security/overview.md)
+    - [4.2.b (i) IPv6 Traffic Filters](infrastructure-security-and-services/network-security/router-security/ipv6-traffic-filters.md)
+    - [4.2.b (ii) IPv4 Access Control Lists](infrastructure-security-and-services/network-security/router-security/ipv4-acls.md)
+    - [4.2.b (iii) Unicast Reverse Path Forwarding](infrastructure-security-and-services/network-security/router-security/urpf.md)
+
+
 # 5.0 Infrastructure Automation and Programmability

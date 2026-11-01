@@ -49,7 +49,7 @@ ipv6 access-list BLOCK_SSH
 | TCP/UDP ports | Extended ACLs | Supported |
 | ICMP filtering | ICMPv4 | ICMPv6 message types |
 | Interface attachment | `ip access-group` | `ipv6 traffic-filter` |
-| Implicit end behavior | Deny remaining IPv4 traffic | Neighbor Discovery permits followed by deny on many IOS XE platforms; see below |
+| Implicit end behavior | Deny remaining IPv4 traffic | Neighbor Discovery permits followed by deny any (see below) |
 
 IPv6 does **not** use the IPv4 ACL syntax of a network address followed by a wildcard mask. For example, use `2001:DB8:10::/64`, not an IPv4-style wildcard expression.
 
@@ -283,6 +283,9 @@ R1(config-ipv6-acl)# permit icmp any any router-advertisement
 ```
 
 The direction matters: hosts normally send RS messages toward routers, and routers send RA messages toward hosts.
+
+> NOTE: Like IPv4 ACLs, outbound IPv6 ACLs don't affect locally generated traffic by default.
+> The above `permit icmp any any router-advertisement` command would only be needed if you have configured `ipv6 access-list match-local-traffic`.
 
 **RA Guard** is a separate Layer 2 security feature designed to protect against unauthorized Router Advertisements. It is covered under IPv6 infrastructure security rather than ordinary router ACL filtering.
 

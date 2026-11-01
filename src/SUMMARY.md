@@ -294,5 +294,12 @@
     - [4.2.b (ii) IPv4 Access Control Lists](infrastructure-security-and-services/network-security/router-security/ipv4-acls.md)
     - [4.2.b (iii) Unicast Reverse Path Forwarding](infrastructure-security-and-services/network-security/router-security/urpf.md)
 
+  - [4.2.c IPv6 Infrastructure Security Features](infrastructure-security-and-services/network-security/ipv6-security/overview.md)
+    - [4.2.c (i) RA Guard](infrastructure-security-and-services/network-security/ipv6-security/ra-guard.md)
+    - [4.2.c (ii) DHCPv6 Guard](infrastructure-security-and-services/network-security/ipv6-security/dhcpv6-guard.md)
+    - [4.2.c (iii) IPv6 Binding Table](infrastructure-security-and-services/network-security/ipv6-security/binding-table.md)
+    - [4.2.c (iv) IPv6 Device Tracking](infrastructure-security-and-services/network-security/ipv6-security/device-tracking.md)
+    - [4.2.c (v) ND Inspection and Snooping](infrastructure-security-and-services/network-security/ipv6-security/nd-inspection.md)
+    - [4.2.c (vi) IPv6 Source Guard](infrastructure-security-and-services/network-security/ipv6-security/source-guard.md)
 
 # 5.0 Infrastructure Automation and Programmability

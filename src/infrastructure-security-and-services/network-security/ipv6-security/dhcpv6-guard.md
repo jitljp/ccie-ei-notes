@@ -40,7 +40,7 @@ DHCPv6 uses **UDP port 546** for clients and **UDP port 547** for servers and re
 | **Reconfigure** | 10 | Server | Ask a client to initiate a new DHCPv6 exchange. |
 | **Information-request** | 11 | Client | Request configuration options without necessarily obtaining an address. |
 | **Relay-forward** | 12 | Relay | Forward client-side messages toward servers. |
-| **Relay-reply** | 13 | Relay | Carry a server's response back toward clients. |
+| **Relay-reply** | 13 | Server (or intermediate relay) | Carry a server's response back toward clients. |
 
 The typical initial stateful DHCPv6 exchange is:
 

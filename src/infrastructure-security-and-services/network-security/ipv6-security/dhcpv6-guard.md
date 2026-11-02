@@ -45,15 +45,15 @@ DHCPv6 uses **UDP port 546** for clients and **UDP port 547** for servers and re
 The typical initial stateful DHCPv6 exchange is:
 
 ```text
-Client                  SW1                 DHCPv6 Server
-  |                      |                        |
-  |------ Solicit ------>|----------------------->|
-  |                      |                        |
-  |<---------------------|<----- Advertise -------|
-  |                      |                        |
-  |------- Request ----->|----------------------->|
-  |                      |                        |
-  |<---------------------|<-------- Reply --------|
+Client                  SW1                 DHCPv6 Server
+  |                      |                        |
+  |------ Solicit ------>|----------------------->|
+  |                      |                        |
+  |<---------------------|<----- Advertise -------|
+  |                      |                        |
+  |------- Request ----->|----------------------->|
+  |                      |                        |
+  |<---------------------|<-------- Reply --------|
 ```
 
 The initial exchange can also use **Rapid Commit**, in which a server replies directly to a Solicit when the feature is supported and negotiated. The fundamental DHCPv6 Guard rule is unchanged: **client-side messages are allowed, while server-side messages must enter through an authorized port**.
@@ -63,7 +63,9 @@ The initial exchange can also use **Rapid Commit**, in which a server replies di
 Cisco classifies DHCPv6 packets by the kind of message they carry:
 
 - **Client-side messages:** Permitted by DHCPv6 Guard regardless of whether the receiving port has the `client` or `server` device role.
+
 - **Server-side messages:** Blocked by the `client` role. With the `server` role, they can pass, subject to any additional policy checks.
+
 - **Relay messages:** DHCPv6 Guard distinguishes client-to-server forwarding from server-to-client forwarding. **Relay-reply** traffic returning to clients must enter through an authorized server/relay-facing port.
 
 DHCPv6 Guard is an **ingress feature**. Permitting a legitimate server's Reply on the server-facing port does not prevent the switch from forwarding it **out** a client-facing port.
@@ -72,16 +74,17 @@ DHCPv6 Guard is an **ingress feature**. Permitting a legitimate server's Reply o
 
 ## DHCPv6 Guard Device Roles
 
-A DHCPv6 Guard policy supports two device roles:
+The main DHCPv6 Guard device roles are `client` and `server`. Some IOS XE implementations also expose a `monitor` role:
 
 | Role | Expected device | Server-side DHCPv6 messages received on the port |
 | --- | --- | --- |
 | `device-role client` | DHCPv6 client or untrusted endpoint | **Dropped** |
 | `device-role server` | Authorized DHCPv6 server, relay, or uplink toward them | **Permitted**, subject to configured checks |
+| `device-role monitor` | Listed in some IOS XE command syntax | Detailed DHCPv6 filtering behavior is not specified in the cited Cisco guides |
 
 The default role **inside a DHCPv6 Guard policy** is `client`. A policy must be attached to an appropriate target before it enforces filtering. **DHCPv6 Guard is not automatically active on every switch interface merely because the default role is `client`.**
 
-Unlike RA Guard, DHCPv6 Guard uses `client` and `server`, not `host` and `router`.
+Unlike RA Guard, DHCPv6 Guard uses `client` and `server` for its main enforcement roles; it does not use RA Guard's `host` and `router` role names.
 
 ### Client Role
 
@@ -101,6 +104,20 @@ SW1(config-dhcp-guard)# device-role server
 
 Apply this where legitimate DHCPv6 server or relay traffic **enters** the switch. The role is necessary to allow server-side messages when DHCPv6 Guard is enforced, but **does not identify or authenticate a particular DHCPv6 server**. Additional matching options can restrict the permitted messages.
 
+
+### Monitor Role
+
+Some Cisco IOS XE documentation also lists `monitor` as an option for DHCPv6 Guard policies:
+
+```text
+SW1(config)# ipv6 dhcp guard policy MONITOR
+SW1(config-dhcp-guard)# device-role monitor
+```
+
+Cisco documents the `monitor` keyword in the command syntax for certain IOS XE devices, but does **not** explain its DHCPv6 filtering or forwarding behavior. Other Cisco IOS XE guides document only the `client` and `server` roles. Therefore, **do not assume that this role permits DHCPv6 server messages, merely logs them, or copies them to a monitoring port**. Check the available syntax and verify packet handling on the device before using it.
+
+This is distinct from the **RA Guard `monitor` role**, whose Router Solicitation forwarding behavior is documented in [RA Guard](ra-guard.md).
+
 ---
 
 ## Basic DHCPv6 Guard Lab
@@ -108,24 +125,23 @@ Apply this where legitimate DHCPv6 server or relay traffic **enters** the switch
 Use one switch, one legitimate DHCPv6 server, one client, and one rogue server:
 
 ```text
-                       R1
-                Legitimate DHCPv6
-                      Server
-                       | Gi1
-                       |
-                    Gi1/0/24
-                 +-----------+
-                 |    SW1    |
-                 |  VLAN 10  |
-                 +-----------+
-                   /       \
-              Gi1/0/1   Gi1/0/2
-                 |         |
-                PC1        R2
-               Client    Rogue DHCPv6
-                           Server
-
-             VLAN 10: 2001:DB8:10::/64
+                       R1
+                Legitimate DHCPv6
+                      Server
+                       | Gi1
+                       |
+                    Gi1/0/24
+                 +-----------+
+                 |    SW1    |
+                 |  VLAN 10  |
+                 +-----------+
+                   /       \\
+              Gi1/0/1   Gi1/0/2
+                 |         |
+                PC1        R2
+               Client    Rogue DHCPv6
+                           Server
+             VLAN 10: 2001:DB8:10::/64
 ```
 
 | SW1 interface | Connected device | Policy | Expected result |
@@ -214,6 +230,7 @@ A `server` policy can optionally examine DHCPv6 server/relay addresses, returned
 | --- | --- |
 | `device-role client` | Block ingress server-side DHCPv6 messages. |
 | `device-role server` | Permit ingress server-side messages, subject to additional checks. |
+| `device-role monitor` | Listed as an option in some IOS XE documentation; DHCPv6 filtering behavior is not defined there. |
 | `match server access-list NAME` | Restrict authorized DHCPv6 server/relay IPv6 addresses. |
 | `match reply prefix-list NAME` | Validate IPv6 addresses/prefixes advertised by the server against a prefix list. |
 | `preference min N` | Reject DHCPv6 Advertise messages with a preference below N. |
@@ -256,7 +273,7 @@ SW1(config-dhcp-guard)# device-role server
 SW1(config-dhcp-guard)# match reply prefix-list ALLOWED_DHCPV6_PREFIXES
 ```
 
-The prefix-list entry permits the `2001:DB8:10::/64` prefix and its more-specific prefixes**, including individual `/128` host addresses within that subnet.
+The prefix-list entry permits the `2001:DB8:10::/64` prefix and its more-specific prefixes, including individual `/128` host addresses within that subnet.
 
 **Why `le 128` matters:**
 
@@ -270,7 +287,7 @@ matches the exact `/64` prefix, while:
 permit 2001:DB8:10::/64 le 128
 ```
 
-also matches more-specific routes/addresses. For DHCPv6 address assignments, that distinction is important because an assigned host address can be evaluated as a `/128`.
+also matches more-specific routes/addresses. For DHCPv6 address assignments, that distinction is important because an assigned host address is evaluated as a `/128`.
 
 For example:
 
@@ -291,6 +308,7 @@ Cisco documents that an **empty referenced prefix list is treated as permit-all*
 DHCPv6 servers can include a **Preference option (option 7)** in Advertise messages. The value ranges from **0 to 255**, and **higher values are preferred** by DHCPv6 clients during server selection.
 
 - **0:** Lowest preference; an Advertise with no Preference option is treated as preference 0 by the client.
+
 - **255:** Highest preference; a valid Advertise with this value can cause the client to proceed immediately with the selected server rather than waiting for more offers.
 
 DHCPv6 Guard can limit the preference values accepted from a server:
@@ -334,12 +352,11 @@ SW1(config-if)# ipv6 dhcp guard attach-policy TRUSTED
 
 All DHCPv6 Guard validation is bypassed on the trusted interface. This includes server-role blocking, source-address matching, reply-prefix filtering, and preference filtering.
 
-`device-role server` and `trusted-port` are different:**
-
+`device-role server` and `trusted-port` are different:
 - `device-role server` **allows server messages but can still validate them**.
 - `trusted-port` **bypasses DHCPv6 Guard checks entirely**.
 
-A practical use for `trusted-port` is to exempt a fully trusted infrastructure interface from a broader restrictive policy. If you want to enforce a server-address ACL, reply prefix list, or preference restriction, **do not use `trusted-port`.
+A practical use for `trusted-port` is to exempt a fully trusted infrastructure interface from a broader restrictive policy. If you want to enforce a server-address ACL, reply prefix list, or preference restriction, do not use `trusted-port`.
 
 ---
 
@@ -404,12 +421,12 @@ SW1(config-if)# ipv6 dhcp guard attach-policy SERVERS
 Consider two switches extending VLAN 10, with the DHCPv6 server attached to SW1 and a client attached to SW2:
 
 ```text
-       R1 (DHCPv6 Server)
-                |
-               SW1 -------- SW2
-                |            |
-               PC1          PC2
-                     VLAN 10
+       R1 (DHCPv6 Server)
+                |
+               SW1 -------- SW2
+                |            |
+               PC1          PC2
+                     VLAN 10
 ```
 
 - The port **receiving R1's messages on SW1** uses a `server` policy.
@@ -426,19 +443,19 @@ Consider two switches extending VLAN 10, with the DHCPv6 server attached to SW1 
 When the DHCPv6 server is on another IPv6 network, a **DHCPv6 relay agent** can forward messages between the client VLAN and the server.
 
 ```text
-                DHCPv6 Server
-                      |
-                 Routed network
-                      |
-                  R1 (Relay)
-                      |
-                   Gi1/0/24
-                      |
-                     SW1
-                      |
-                   Gi1/0/1
-                      |
-                     PC1
+                DHCPv6 Server
+                      |
+                 Routed network
+                      |
+                  R1 (Relay)
+                      |
+                   Gi1/0/24
+                      |
+                     SW1
+                      |
+                   Gi1/0/1
+                      |
+                     PC1
 ```
 
 The client initially sends Solicit messages toward the all-DHCP-servers-and-relays multicast destination `FF02::1:2` (UDP 547). The relay forwards requests toward the configured DHCPv6 server. The server's responses return through the relay, which delivers the response on the client-facing link.
@@ -535,7 +552,7 @@ For packet-level inspection, capture **UDP 546 and UDP 547** and compare DHCPv6 
 1. Verify PC1 can receive RAs and is configured to request DHCPv6 information. For stateful DHCPv6, inspect the RA **M flag**.
 2. Verify PC1 sends a **Solicit** or **Information-request** as appropriate.
 3. Confirm the message reaches R1 or its DHCPv6 relay.
-4. Check that the legitimate response arrives on an interface with a `server` policy**.
+4. Check that the legitimate response arrives on an interface with a `server` policy.
 5. If it is dropped, examine the **server-address ACL**, **reply prefix list**, and **preference bounds**.
 6. Verify the server's Reply reaches PC1 and that PC1 installs the intended address or options.
 7. Independently verify that messages from R2 are dropped at **R2's ingress port**.
@@ -549,6 +566,7 @@ Do not confuse a failed IPv6 default route with a failed DHCPv6 exchange: **rout
 - **DHCPv6 Guard** blocks unauthorized DHCPv6 server and relay replies at **ingress** on a Layer 2 switch.
 - `device-role client` is the default policy role and drops incoming server-side DHCPv6 messages; ordinary client messages are allowed.
 - `device-role server` permits server-side messages, subject to optional validation.
+- `device-role monitor` is listed in some IOS XE command syntax, but Cisco does not specify its DHCPv6 packet-handling behavior in those guides.
 - `match server access-list` restricts authorized server/relay IPv6 addresses.
 - `match reply prefix-list` restricts the IPv6 addresses or prefixes assigned in DHCPv6 server messages. Use `le 128` when permitting host addresses within a `/64`.
 - `preference min` and `preference max` restrict the DHCPv6 **Advertise Preference option**, ranging from 0 through 255. Higher values are preferred by clients.
@@ -561,8 +579,9 @@ Do not confuse a failed IPv6 default route with a failed DHCPv6 exchange: **rout
 
 ## References
 
-- [Cisco: DHCPv6 Guard, IOS XE 17.x](https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/sec-vpn/b-security-vpn/m_ip6-dhcpv6-guard.html)
-- [Cisco: Configuring IPv6 First Hop Security, Catalyst 9600 IOS XE 26.x](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9600/software/release/26-x/configuration_guide/sec/b_26x_sec_9600_cg/configuring_ipv6_first_hop_security.html)
-- [Cisco: IPv6 DHCPv6 Guard Command Reference (preference, match server, match reply)](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/ipaddr/command/ipaddr-cr-book/ipaddr-l1.html)
-- [Cisco: IPv6 DHCP Guard Attachment Command Reference](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/ipv6/command/ipv6-cr-book/ipv6-i1.html)
-- [RFC 9915: Dynamic Host Configuration Protocol for IPv6 (DHCPv6)](https://www.rfc-editor.org/rfc/rfc9915.html)
+- [Cisco: DHCPv6 Guard, IOS XE 17.x](https\://www\.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/sec-vpn/b-security-vpn/m_ip6-dhcpv6-guard.html)
+- [Cisco: Configuring IPv6 First Hop Security, Catalyst 9600 IOS XE 26.x](https\://www\.cisco.com/c/en/us/td/docs/switches/lan/catalyst9600/software/release/26-x/configuration_guide/sec/b_26x_sec_9600_cg/configuring_ipv6_first_hop_security.html)
+- [Cisco: IPv6 DHCPv6 Guard Command Reference (preference, match server, match reply)](https\://www\.cisco.com/c/en/us/td/docs/ios-xml/ios/ipaddr/command/ipaddr-cr-book/ipaddr-l1.html)
+- [Cisco: IPv6 DHCP Guard Attachment Command Reference](https\://www\.cisco.com/c/en/us/td/docs/ios-xml/ios/ipv6/command/ipv6-cr-book/ipv6-i1.html)
+- [RFC 9915: Dynamic Host Configuration Protocol for IPv6 (DHCPv6)](https\://www\.rfc-editor.org/rfc/rfc9915.html)
+- [Cisco: DHCPv6 Guard Device Roles, Catalyst 8300 EtherSwitch Service Module](https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8300/Interface_Module_SCG/C-SMX16G4M2X-book.html)

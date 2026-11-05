@@ -306,7 +306,7 @@
   - [4.4.a Differentiated Services Architecture](infrastructure-security-and-services/quality-of-service/diffserv/overview.md)
     - [QoS Models and DiffServ Architecture](infrastructure-security-and-services/quality-of-service/diffserv/qos-models.md)
     - [DiffServ Domains and Traffic Conditioning](infrastructure-security-and-services/quality-of-service/diffserv/domains.md)
-    - [Per-Hop Behaviors (BE, EF, AF)](infrastructure-security-and-services/quality-of-service/diffserv/phb.md)
+    - [Per-Hop Behaviors (BE, EF, AF, CS)](infrastructure-security-and-services/quality-of-service/diffserv/phb.md)
   - [4.4.b Classification and Trust Boundary](infrastructure-security-and-services/quality-of-service/classification/overview.md)
     - [Traffic Classification Methods](infrastructure-security-and-services/quality-of-service/classification/methods.md)
     - [MQC Class Maps and Match Criteria](infrastructure-security-and-services/quality-of-service/classification/class-maps.md)

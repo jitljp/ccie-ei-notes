@@ -24,6 +24,91 @@
     - [Route Replication](network-infrastructure/routing-concepts/route-leaking/route-replication.md)
     - [VASI](network-infrastructure/routing-concepts/route-leaking/vasi.md)
 
+
+- [1.5 BGP](network-infrastructure/bgp/overview.md)
+  - [BGP Fundamentals and Operation](network-infrastructure/bgp/fundamentals.md)
+  - [BGP Messages and Neighbor States](network-infrastructure/bgp/messages-states.md)
+  - [BGP Route Advertisement and Network Statements](network-infrastructure/bgp/route-advertisement.md)
+
+  - [1.5.a IBGP and EBGP Peer Relations](network-infrastructure/bgp/peering/overview.md)
+    - [IBGP and EBGP Neighbor Configuration](network-infrastructure/bgp/peering/neighbor-configuration.md)
+    - [BGP Next-Hop Handling](network-infrastructure/bgp/peering/next-hop.md)
+    - [BGP Update Source and Multihop Peering](network-infrastructure/bgp/peering/multihop.md)
+
+    - [1.5.a (i) Peer Groups and Templates](network-infrastructure/bgp/peering/peer-groups-templates/overview.md)
+      - [BGP Peer Groups](network-infrastructure/bgp/peering/peer-groups-templates/peer-groups.md)
+      - [BGP Peer Templates](network-infrastructure/bgp/peering/peer-groups-templates/peer-templates.md)
+
+    - [1.5.a (ii) Active and Passive](network-infrastructure/bgp/peering/active-passive.md)
+    - [1.5.a (iii) Timers](network-infrastructure/bgp/peering/timers.md)
+    - [1.5.a (iv) Dynamic Neighbors](network-infrastructure/bgp/peering/dynamic-neighbors.md)
+    - [1.5.a (v) 4-Byte AS Numbers](network-infrastructure/bgp/peering/four-byte-asn.md)
+    - [1.5.a (vi) Private AS Numbers](network-infrastructure/bgp/peering/private-asn.md)
+
+  - [1.5.b Path Selection](network-infrastructure/bgp/path-selection/overview.md)
+
+    - [1.5.b (i) Attributes](network-infrastructure/bgp/path-selection/attributes/overview.md)
+      - [BGP Attribute Categories](network-infrastructure/bgp/path-selection/attributes/categories.md)
+      - [Weight and Local Preference](network-infrastructure/bgp/path-selection/attributes/weight-local-preference.md)
+      - [AS_PATH](network-infrastructure/bgp/path-selection/attributes/as-path.md)
+      - [Origin and MED](network-infrastructure/bgp/path-selection/attributes/origin-med.md)
+      - [NEXT_HOP](network-infrastructure/bgp/path-selection/attributes/next-hop.md)
+
+    - [1.5.b (ii) Best Path Selection Algorithm](network-infrastructure/bgp/path-selection/best-path/overview.md)
+      - [BGP Best Path Selection Steps](network-infrastructure/bgp/path-selection/best-path/selection-steps.md)
+      - [BGP Best Path Selection Configuration](network-infrastructure/bgp/path-selection/best-path/configuration.md)
+      - [BGP Path Selection and RIB Installation](network-infrastructure/bgp/path-selection/best-path/rib-installation.md)
+
+    - [1.5.b (iii) Load Balancing](network-infrastructure/bgp/path-selection/load-balancing.md)
+
+  - [1.5.c Routing Policies](network-infrastructure/bgp/routing-policies/overview.md)
+    - [BGP Route Filtering](network-infrastructure/bgp/routing-policies/route-filtering.md)
+    - [BGP Prefix Lists, AS-Path ACLs, and Route Maps](network-infrastructure/bgp/routing-policies/filtering-tools.md)
+
+    - [1.5.c (i) Attribute Manipulation](network-infrastructure/bgp/routing-policies/attribute-manipulation.md)
+    - [1.5.c (ii) Conditional Advertisement](network-infrastructure/bgp/routing-policies/conditional-advertisement.md)
+    - [1.5.c (iii) Outbound Route Filtering](network-infrastructure/bgp/routing-policies/orf.md)
+
+    - [1.5.c (iv) Standard and Extended Communities](network-infrastructure/bgp/routing-policies/communities/overview.md)
+      - [Standard BGP Communities](network-infrastructure/bgp/routing-policies/communities/standard.md)
+      - [Extended BGP Communities](network-infrastructure/bgp/routing-policies/communities/extended.md)
+      - [BGP Community Configuration and Filtering](network-infrastructure/bgp/routing-policies/communities/configuration.md)
+
+    - [1.5.c (v) Multihoming](network-infrastructure/bgp/routing-policies/multihoming/overview.md)
+      - [Outbound Traffic Engineering](network-infrastructure/bgp/routing-policies/multihoming/outbound.md)
+      - [Inbound Traffic Engineering](network-infrastructure/bgp/routing-policies/multihoming/inbound.md)
+
+  - [1.5.d AS Path Manipulations](network-infrastructure/bgp/as-path/overview.md)
+
+    - [1.5.d (i) Local-AS, Allowas-in, Remove-Private-AS](network-infrastructure/bgp/as-path/as-number-manipulation/overview.md)
+      - [Local-AS](network-infrastructure/bgp/as-path/as-number-manipulation/local-as.md)
+      - [Allowas-in](network-infrastructure/bgp/as-path/as-number-manipulation/allowas-in.md)
+      - [Remove-Private-AS](network-infrastructure/bgp/as-path/as-number-manipulation/remove-private-as.md)
+
+    - [1.5.d (ii) AS Path Prepending](network-infrastructure/bgp/as-path/prepending.md)
+    - [1.5.d (iii) Regular Expressions](network-infrastructure/bgp/as-path/regular-expressions.md)
+
+  - [1.5.e Convergence and Scalability](network-infrastructure/bgp/scalability/overview.md)
+
+    - [1.5.e (i) Route Reflectors](network-infrastructure/bgp/scalability/route-reflectors/overview.md)
+      - [Route Reflector Operation and Configuration](network-infrastructure/bgp/scalability/route-reflectors/configuration.md)
+      - [Route Reflection Rules](network-infrastructure/bgp/scalability/route-reflectors/reflection-rules.md)
+      - [Cluster IDs, Originator IDs, and Loop Prevention](network-infrastructure/bgp/scalability/route-reflectors/loop-prevention.md)
+      - [Multiple Route Reflectors and Redundancy](network-infrastructure/bgp/scalability/route-reflectors/redundancy.md)
+
+    - [1.5.e (ii) Aggregation and AS-SET](network-infrastructure/bgp/scalability/aggregation/overview.md)
+      - [BGP Aggregation Configuration](network-infrastructure/bgp/scalability/aggregation/configuration.md)
+      - [AS-SET and Attribute Preservation](network-infrastructure/bgp/scalability/aggregation/as-set.md)
+      - [Summary-Only, Suppress-Map, and Unsuppress-Map](network-infrastructure/bgp/scalability/aggregation/suppression.md)
+      - [Advertise-Map and Attribute-Map](network-infrastructure/bgp/scalability/aggregation/advertise-attribute-map.md)
+
+  - [1.5.f Other BGP Features](network-infrastructure/bgp/other-features/overview.md)
+    - [BGP Soft Reconfiguration](network-infrastructure/bgp/other-features/soft-reconfiguration.md)
+    - [BGP Route Refresh](network-infrastructure/bgp/other-features/route-refresh.md)
+    - [BGP Session Reset and Clearing](network-infrastructure/bgp/other-features/session-reset.md)
+    - [BGP Maximum Prefix](network-infrastructure/bgp/other-features/maximum-prefix.md)
+    - [BGP Fast Convergence and BFD](network-infrastructure/bgp/other-features/fast-convergence.md)
+
 - [1.6 Multicast](network-infrastructure/multicast/overview.md)
   - [IPv4 Multicast Addressing](network-infrastructure/multicast/ipv4-multicast-addressing.md)
   - [Local Network Control Multicast](network-infrastructure/multicast/local-network-control.md)

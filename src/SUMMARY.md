@@ -303,6 +303,8 @@
       - [6PE](transport-technologies-and-solutions/mpls/l3vpn/advanced/6pe.md)
       - [6VPE](transport-technologies-and-solutions/mpls/l3vpn/advanced/6vpe.md)
 
+  - [MPLS L2VPN (Supplementary)](transport-technologies-and-solutions/mpls/l2vpn/l2vpn-eompls.md)
+
 - [3.3 DMVPN](transport-technologies-and-solutions/dmvpn/overview.md)
   - [DMVPN Architecture and Components](transport-technologies-and-solutions/dmvpn/architecture.md)
   - [NHRP Fundamentals](transport-technologies-and-solutions/dmvpn/nhrp-fundamentals.md)

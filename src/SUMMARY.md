@@ -423,7 +423,6 @@
   - [4.4.g Hierarchical QoS (HQoS)](infrastructure-security-and-services/quality-of-service/hqos/overview.md)
     - [Hierarchical Policy Maps and Parent-Child Policies](infrastructure-security-and-services/quality-of-service/hqos/parent-child.md)
     - [Hierarchical Shaping and Queuing](infrastructure-security-and-services/quality-of-service/hqos/shaping-queuing.md)
-    - [HQoS Configuration](infrastructure-security-and-services/quality-of-service/hqos/configuration.md)
   - [4.4.h End-to-End Layer 3 QoS Using MQC](infrastructure-security-and-services/quality-of-service/mqc/overview.md)
     - [MQC Policy Maps and Service Policies](infrastructure-security-and-services/quality-of-service/mqc/policy-maps.md)
     - [End-to-End QoS Design](infrastructure-security-and-services/quality-of-service/mqc/design.md)

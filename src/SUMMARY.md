@@ -328,7 +328,7 @@
       - [IKEv2/IPsec Configuration for DMVPN](transport-technologies-and-solutions/dmvpn/phase3/ipsec/configuration.md)
 
     - [Complete DMVPN Phase 3 Configuration](transport-technologies-and-solutions/dmvpn/phase3/complete_config.md)
-
+    - [Per-Tunnel QoS](transport-technologies-and-solutions/dmvpn/per-tunnel-qos.md)
 
 # 4.0 Infrastructure Security and Services
 

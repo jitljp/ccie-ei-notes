@@ -425,6 +425,7 @@
     - [Hierarchical Shaping and Queuing](infrastructure-security-and-services/quality-of-service/hqos/shaping-queuing.md)
   - [4.4.h End-to-End Layer 3 QoS Using MQC](infrastructure-security-and-services/quality-of-service/mqc/overview.md)
     - [End-to-End QoS Design](infrastructure-security-and-services/quality-of-service/mqc/design.md)
+    - [QoS with Tunnels (GRE, DMVPN, and IPsec)](infrastructure-security-and-services/quality-of-service/mqc/tunnels.md)
     - [Complete End-to-End MQC Configuration](infrastructure-security-and-services/quality-of-service/mqc/configuration.md)
 
 # 5.0 Infrastructure Automation and Programmability

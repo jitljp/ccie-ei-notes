@@ -53,9 +53,11 @@
       - [AS_PATH](network-infrastructure/bgp/path-selection/attributes/as-path.md)
       - [Origin and MED](network-infrastructure/bgp/path-selection/attributes/origin-med.md)
       - [NEXT_HOP](network-infrastructure/bgp/path-selection/attributes/next-hop.md)
+      - [Accumulated IGP (AIGP)](network-infrastructure/bgp/path-selection/attributes/aigp.md)
 
     - [1.5.b (ii) Best Path Selection Algorithm](network-infrastructure/bgp/path-selection/best-path/overview.md)
       - [BGP Best Path Selection Steps](network-infrastructure/bgp/path-selection/best-path/selection-steps.md)
+      - [BGP Cost Communities and Points of Insertion](network-infrastructure/bgp/path-selection/best-path/cost-community.md)
       - [BGP Best Path Selection Configuration](network-infrastructure/bgp/path-selection/best-path/configuration.md)
       - [BGP Path Selection and RIB Installation](network-infrastructure/bgp/path-selection/best-path/rib-installation.md)
 

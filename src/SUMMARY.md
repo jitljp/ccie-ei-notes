@@ -69,6 +69,7 @@
 
     - [1.5.c (i) Attribute Manipulation](network-infrastructure/bgp/routing-policies/attribute-manipulation.md)
     - [1.5.c (ii) Conditional Advertisement](network-infrastructure/bgp/routing-policies/conditional-advertisement.md)
+    - [BGP Conditional Route Injection](network-infrastructure/bgp/routing-policies/conditional-route-injection.md)
     - [1.5.c (iii) Outbound Route Filtering](network-infrastructure/bgp/routing-policies/orf.md)
 
     - [1.5.c (iv) Standard and Extended Communities](network-infrastructure/bgp/routing-policies/communities/overview.md)

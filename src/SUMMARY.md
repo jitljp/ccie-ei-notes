@@ -99,7 +99,7 @@
       - [Cluster IDs, Originator IDs, and Loop Prevention](network-infrastructure/bgp/scalability/route-reflectors/loop-prevention.md)
       - [Multiple Route Reflectors and Redundancy](network-infrastructure/bgp/scalability/route-reflectors/redundancy.md)
 
-    - [1.5.e (ii) Aggregation and AS-SET](network-infrastructure/bgp/scalability/aggregation/overview.md)
+    - [1.5.e (ii) Aggregation, as-set](network-infrastructure/bgp/scalability/aggregation/overview.md)
       - [BGP Aggregation Configuration](network-infrastructure/bgp/scalability/aggregation/configuration.md)
       - [AS-SET and Attribute Preservation](network-infrastructure/bgp/scalability/aggregation/as-set.md)
       - [Summary-Only, Suppress-Map, and Unsuppress-Map](network-infrastructure/bgp/scalability/aggregation/suppression.md)

@@ -93,11 +93,15 @@
 
   - [1.5.e Convergence and Scalability](network-infrastructure/bgp/scalability/overview.md)
 
+
     - [1.5.e (i) Route Reflectors](network-infrastructure/bgp/scalability/route-reflectors/overview.md)
       - [Route Reflector Operation and Configuration](network-infrastructure/bgp/scalability/route-reflectors/configuration.md)
       - [Route Reflection Rules](network-infrastructure/bgp/scalability/route-reflectors/reflection-rules.md)
       - [Cluster IDs, Originator IDs, and Loop Prevention](network-infrastructure/bgp/scalability/route-reflectors/loop-prevention.md)
       - [Multiple Route Reflectors and Redundancy](network-infrastructure/bgp/scalability/route-reflectors/redundancy.md)
+      - [Client-to-Client Reflection Configuration](network-infrastructure/bgp/scalability/route-reflectors/client-to-client-reflection.md)
+      - [BGP Route Reflector Groups](network-infrastructure/bgp/scalability/route-reflectors/rr-groups.md)
+
 
     - [1.5.e (ii) Aggregation, as-set](network-infrastructure/bgp/scalability/aggregation/overview.md)
       - [BGP Aggregation Configuration](network-infrastructure/bgp/scalability/aggregation/configuration.md)

@@ -113,6 +113,9 @@
     - [BGP Session Reset and Clearing](network-infrastructure/bgp/other-features/session-reset.md)
     - [BGP Maximum Prefix](network-infrastructure/bgp/other-features/maximum-prefix.md)
     - [BGP Fast Convergence and BFD](network-infrastructure/bgp/other-features/fast-convergence.md)
+    - [BGP Graceful Restart](network-infrastructure/bgp/other-features/graceful-restart.md)
+    - [BGP Additional Paths (ADD-PATH)](network-infrastructure/bgp/other-features/add-path.md)
+    - [BGP Route Flap Dampening](network-infrastructure/bgp/other-features/route-flap-dampening.md)
 
 - [1.6 Multicast](network-infrastructure/multicast/overview.md)
   - [IPv4 Multicast Addressing](network-infrastructure/multicast/ipv4-multicast-addressing.md)

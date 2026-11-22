@@ -115,6 +115,7 @@
     - [BGP Fast Convergence and BFD](network-infrastructure/bgp/other-features/fast-convergence.md)
     - [BGP Graceful Restart](network-infrastructure/bgp/other-features/graceful-restart.md)
     - [BGP Additional Paths (ADD-PATH)](network-infrastructure/bgp/other-features/add-path.md)
+    - [BGP Diverse Path](network-infrastructure/bgp/other-features/diverse-path.md)
     - [BGP Route Flap Dampening](network-infrastructure/bgp/other-features/route-flap-dampening.md)
 
 - [1.6 Multicast](network-infrastructure/multicast/overview.md)

@@ -437,4 +437,44 @@
     - [QoS with Tunnels (GRE, DMVPN, and IPsec)](infrastructure-security-and-services/quality-of-service/mqc/tunnels.md)
     - [Complete End-to-End MQC Configuration](infrastructure-security-and-services/quality-of-service/mqc/configuration.md)
 
+
+- [4.5 Network Services](infrastructure-security-and-services/network-services/overview.md)
+
+  - [4.5.d IPv4 Network Address Translation](infrastructure-security-and-services/network-services/nat/overview.md)
+    - [NAT Address Terminology and Translation Types](infrastructure-security-and-services/network-services/nat/terminology.md)
+    - [NAT Packet Processing and Order of Operations](infrastructure-security-and-services/network-services/nat/order-of-operations.md)
+    - [NAT Translation Tables and Verification](infrastructure-security-and-services/network-services/nat/verification.md)
+
+    - [4.5.d (i) Static NAT, PAT](infrastructure-security-and-services/network-services/nat/static/overview.md)
+      - [Static Inside Source NAT](infrastructure-security-and-services/network-services/nat/static/inside-source.md)
+      - [Static Network-to-Network NAT](infrastructure-security-and-services/network-services/nat/static/network-mapping.md)
+      - [Static PAT and Port Forwarding](infrastructure-security-and-services/network-services/nat/static/pat.md)
+      - [Interface NAT and Default/DMZ Host](infrastructure-security-and-services/network-services/nat/static/interface-nat.md)
+      - [Static Outside Source NAT and PAT](infrastructure-security-and-services/network-services/nat/static/outside-source.md)
+      - [Static NAT Options and ARP Behavior](infrastructure-security-and-services/network-services/nat/static/options.md)
+
+    - [4.5.d (ii) Dynamic NAT, PAT](infrastructure-security-and-services/network-services/nat/dynamic/overview.md)
+      - [Dynamic Inside Source NAT and Address Pools](infrastructure-security-and-services/network-services/nat/dynamic/inside-source.md)
+      - [NAT Pool Allocation and Host Matching](infrastructure-security-and-services/network-services/nat/dynamic/pool-allocation.md)
+      - [Dynamic PAT and NAT Overload](infrastructure-security-and-services/network-services/nat/dynamic/pat.md)
+      - [Dynamic Outside Source NAT](infrastructure-security-and-services/network-services/nat/dynamic/outside-source.md)
+      - [Inside Destination NAT and Load Balancing](infrastructure-security-and-services/network-services/nat/dynamic/destination-nat.md)
+
+    - [4.5.d (iii) Policy-Based NAT, PAT](infrastructure-security-and-services/network-services/nat/policy-based/overview.md)
+      - [Route-Map-Based NAT and Conditional Translation](infrastructure-security-and-services/network-services/nat/policy-based/route-maps.md)
+      - [Destination-Based NAT and Traffic Engineering](infrastructure-security-and-services/network-services/nat/policy-based/traffic-engineering.md)
+      - [Multi-ISP NAT and Failover](infrastructure-security-and-services/network-services/nat/policy-based/multi-egress.md)
+      - [Multi-Ingress NAT](infrastructure-security-and-services/network-services/nat/policy-based/multi-ingress.md)
+      - [Twice NAT and Overlapping Networks](infrastructure-security-and-services/network-services/nat/policy-based/twice-nat.md)
+      - [NAT-on-a-Stick with PBR](infrastructure-security-and-services/network-services/nat/policy-based/nat-on-a-stick.md)
+
+    - [4.5.d (iv) VRF-Aware NAT, PAT](infrastructure-security-and-services/network-services/nat/vrf/overview.md)
+      - [VRF-to-Global NAT and PAT](infrastructure-security-and-services/network-services/nat/vrf/vrf-to-global.md)
+      - [Intra-VRF NAT and match-in-vrf](infrastructure-security-and-services/network-services/nat/vrf/match-in-vrf.md)
+      - [Overlapping Addresses Across VRFs](infrastructure-security-and-services/network-services/nat/vrf/overlapping-addresses.md)
+
+    - [4.5.d (v) VRF-Aware Software Infrastructure (VASI) NAT](infrastructure-security-and-services/network-services/nat/vasi/overview.md)
+      - [VASI NAT Packet Flow and Interface Roles](infrastructure-security-and-services/network-services/nat/vasi/packet-flow.md)
+      - [VASI NAT and PAT Configuration](infrastructure-security-and-services/network-services/nat/vasi/configuration.md)
+
 # 5.0 Infrastructure Automation and Programmability

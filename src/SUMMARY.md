@@ -365,7 +365,6 @@
     - [AAA Accounting](infrastructure-security-and-services/device-security/aaa/accounting.md)
     - [AAA Server Failover and Local Fallback](infrastructure-security-and-services/device-security/aaa/failover.md)
     - [Complete AAA Configuration](infrastructure-security-and-services/device-security/aaa/configuration.md)
-	
 
 - [4.2 Network Security](infrastructure-security-and-services/network-security/overview.md)
 
@@ -397,6 +396,45 @@
     - [4.2.c (iv) IPv6 Device Tracking](infrastructure-security-and-services/network-security/ipv6-security/device-tracking.md)
     - [4.2.c (v) ND Inspection and Snooping](infrastructure-security-and-services/network-security/ipv6-security/nd-inspection.md)
     - [4.2.c (vi) IPv6 Source Guard](infrastructure-security-and-services/network-security/ipv6-security/source-guard.md)
+
+
+- [4.3 System Management](infrastructure-security-and-services/system-management/overview.md)
+
+  - [4.3.a Device Management](infrastructure-security-and-services/system-management/device-management/overview.md)
+
+    - [4.3.a (i) Console and VTY](infrastructure-security-and-services/system-management/device-management/console-vty/overview.md)
+      - [Console Line Configuration](infrastructure-security-and-services/system-management/device-management/console-vty/console.md)
+      - [VTY Line Configuration and Remote Access](infrastructure-security-and-services/system-management/device-management/console-vty/vty.md)
+      - [Telnet Configuration and Operation](infrastructure-security-and-services/system-management/device-management/console-vty/telnet.md)
+      - [Session Timeouts and Access Restrictions](infrastructure-security-and-services/system-management/device-management/console-vty/access-control.md)
+      - [Rotary Groups and Custom TCP Ports](infrastructure-security-and-services/system-management/device-management/console-vty/rotary-groups.md)
+
+    - [4.3.a (ii) SSH, SCP](infrastructure-security-and-services/system-management/device-management/ssh-scp/overview.md)
+      - [SSH Configuration and Verification](infrastructure-security-and-services/system-management/device-management/ssh-scp/ssh.md)
+      - [SSH Authentication and Security Options](infrastructure-security-and-services/system-management/device-management/ssh-scp/authentication.md)
+      - [SCP Configuration and File Transfers](infrastructure-security-and-services/system-management/device-management/ssh-scp/scp.md)
+
+    - [4.3.a (iii) RESTCONF, NETCONF](infrastructure-security-and-services/system-management/device-management/restconf-netconf/overview.md)
+      - [NETCONF Configuration and Operations](infrastructure-security-and-services/system-management/device-management/restconf-netconf/netconf.md)
+      - [RESTCONF Configuration and Operations](infrastructure-security-and-services/system-management/device-management/restconf-netconf/restconf.md)
+
+  - [4.3.b SNMP (v2c, v3)](infrastructure-security-and-services/system-management/snmp/overview.md)
+    - [SNMP Architecture, MIBs, and OIDs](infrastructure-security-and-services/system-management/snmp/fundamentals.md)
+    - [SNMPv2c Configuration and Community Strings](infrastructure-security-and-services/system-management/snmp/snmpv2c.md)
+    - [SNMPv3 Security Models, Groups, and Users](infrastructure-security-and-services/system-management/snmp/snmpv3.md)
+    - [SNMP Traps, Informs, and Notifications](infrastructure-security-and-services/system-management/snmp/notifications.md)
+    - [SNMP Verification and Troubleshooting](infrastructure-security-and-services/system-management/snmp/verification.md)
+
+  - [4.3.c Logging](infrastructure-security-and-services/system-management/logging/overview.md)
+
+    - [4.3.c (i) Local Logging, Syslog, Debugs, Conditional Debugs](infrastructure-security-and-services/system-management/logging/operational/overview.md)
+      - [Local Logging and Logging Destinations](infrastructure-security-and-services/system-management/logging/operational/local.md)
+      - [Syslog Messages, Severity Levels, and Remote Syslog](infrastructure-security-and-services/system-management/logging/operational/syslog.md)
+      - [Debug Commands and Conditional Debugging](infrastructure-security-and-services/system-management/logging/operational/debugging.md)
+
+    - [4.3.c (ii) Configuration Change Notification and Logging](infrastructure-security-and-services/system-management/logging/configuration-changes.md)
+
+    - [4.3.c (iii) Timestamps](infrastructure-security-and-services/system-management/logging/timestamps.md)
 
 - [4.4 Quality of Service](infrastructure-security-and-services/quality-of-service/overview.md)
   - [4.4.a Differentiated Services Architecture](infrastructure-security-and-services/quality-of-service/diffserv/overview.md)

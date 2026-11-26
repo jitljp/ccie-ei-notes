@@ -475,7 +475,6 @@
     - [QoS with Tunnels (GRE, DMVPN, and IPsec)](infrastructure-security-and-services/quality-of-service/mqc/tunnels.md)
     - [Complete End-to-End MQC Configuration](infrastructure-security-and-services/quality-of-service/mqc/configuration.md)
 
-
 - [4.5 Network Services](infrastructure-security-and-services/network-services/overview.md)
 
   - [4.5.d IPv4 Network Address Translation](infrastructure-security-and-services/network-services/nat/overview.md)
@@ -504,7 +503,6 @@
       - [Multi-ISP NAT and Failover](infrastructure-security-and-services/network-services/nat/policy-based/multi-egress.md)
       - [Multi-Ingress NAT](infrastructure-security-and-services/network-services/nat/policy-based/multi-ingress.md)
       - [Twice NAT and Overlapping Networks](infrastructure-security-and-services/network-services/nat/policy-based/twice-nat.md)
-      - [NAT-on-a-Stick with PBR](infrastructure-security-and-services/network-services/nat/policy-based/nat-on-a-stick.md)
 
     - [4.5.d (iv) VRF-Aware NAT, PAT](infrastructure-security-and-services/network-services/nat/vrf/overview.md)
       - [VRF-to-Global NAT and PAT](infrastructure-security-and-services/network-services/nat/vrf/vrf-to-global.md)

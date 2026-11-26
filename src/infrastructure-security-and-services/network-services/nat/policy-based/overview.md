@@ -435,20 +435,6 @@ See [Twice NAT and Overlapping Networks](twice-nat.md) for the complete topology
 
 ---
 
-## NAT-on-a-Stick with PBR
-
-Traditional inside/outside NAT normally requires traffic to traverse interfaces with different NAT roles.
-
-In a NAT-on-a-stick design, traffic may enter and leave the NAT router through the same physical Layer 3 interface. A loopback interface and PBR can be used to create a logical path through both NAT domains in the classic NAT-on-a-stick design.
-
-This is an example of PBR being used to steer traffic through the translation process, rather than to select a different inside global address.
-
-The policy must distinguish the traffic that needs to be redirected from traffic that has already traversed the logical NAT path, to avoid forwarding loops.
-
-See [NAT-on-a-Stick with PBR](nat-on-a-stick.md) for the classic loopback-based design. IOS XE also has a dedicated NAT Stick feature on supported platforms, which is distinct from the classic PBR approach.
-
----
-
 ## Verification and Troubleshooting
 
 The primary verification commands for policy-based NAT are:
@@ -495,7 +481,7 @@ When troubleshooting, check the following:
 - Inside-to-outside routing occurs before NAT, allowing a NAT route map to match the selected outgoing interface.
 - In multi-ISP designs, NAT and routing policies must agree on which outside addresses and paths are used.
 - Existing NAT translations can affect the results of policy changes and failover.
-- Twice NAT and NAT-on-a-stick illustrate how translation can be combined with specialized forwarding designs.
+- Twice NAT illustrates how translation can be combined with specialized forwarding designs.
 
 ---
 
@@ -506,5 +492,4 @@ When troubleshooting, check the following:
 - [Cisco IOS XE Release 2: Configuring NAT for IP Address Conservation](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/ipaddr_nat/configuration/xe-2/nat-xe-2-book/iadnat-addr-consv.html)
 - [Cisco: NAT Routemaps Outside-to-Inside Support](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/ipaddr_nat/configuration/15-mt/nat-15-mt-book/iadnat-rmap-outin.html)
 - [Cisco: IOS NAT Load-Balancing with Optimized Edge Routing for Two Internet Connections](https://www.cisco.com/c/en/us/support/docs/ip/network-address-translation-nat/99427-ios-nat-2isp.html)
-- [Cisco: Network Address Translation on a Stick](https://www.cisco.com/c/en/us/support/docs/ip/network-address-translation-nat/6505-nat-on-stick.html)
 - [Cisco IOS XE: NAT Stick Overview](https://www.cisco.com/c/en/us/td/docs/routers/ios-xe/ip-addressing/ip-addressing/m_nat-on-stick.html)
